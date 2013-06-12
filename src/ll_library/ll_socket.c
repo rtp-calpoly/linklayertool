@@ -5,19 +5,19 @@
  *
  * @section LICENSE
  *
- * This file is part of netlevel-tool.
- * netlevel-tool is free software: you can redistribute it and/or modify
+ * This file is part of linklayertool.
+ * linklayertool is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * netlevel-tool is distributed in the hope that it will be useful,
+ * linklayertool is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with netlevel-tool.  If not, see <http://www.gnu.org/licenses/>.
+ * along with linklayertool.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "ll_socket.h"
@@ -530,7 +530,7 @@ int start_ll_socket(ll_socket_t *ll_socket)
 
 	// 1) start event_loop event's reading
 	log_app_msg("Starting ev_run_loop.\n");
-	ev_run(ll_socket->loop, 0);
+	ev_loop(ll_socket->loop, 0);
 	log_app_msg("Done ev_run_loop.\n");
 	ll_socket->state = LL_SOCKET_STATE_RUNNING;
 

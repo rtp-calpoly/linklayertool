@@ -7,30 +7,30 @@
  *
  *  Created on: May 6, 2013
  *      Author: Ricardo Tubío (rtpardavila[at]gmail.com)
- * This file is part of netlevel-tool.
- * netlevel-tool is free software: you can redistribute it and/or modify
+ * This file is part of linklayertool.
+ * linklayertool is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * netlevel-tool is distributed in the hope that it will be useful,
+ * linklayertool is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with netlevel-tool.  If not, see <http://www.gnu.org/licenses/>.
+ * along with linklayertool.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "main.h"
 
 #include "logger.h"
 #include "configuration.h"
-#include "ll_socket.h"
-#include "ll_frame.h"
+#include "ll_library/ll_socket.h"
+#include "ll_library/ll_frame.h"
 
 /**************************************************** Application definitions */
-static const char* __x_app_name = "netlevel-tool";
+static const char* __x_app_name = "linklayertool";
 static const char* __x_app_version = "0.1";
 
 /********************************************************* INTERNAL FUNCTIONS */
