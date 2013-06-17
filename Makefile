@@ -125,11 +125,20 @@ distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
+<<<<<<< HEAD
 ACLOCAL = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run aclocal-1.11
 AMTAR = $${TAR-tar}
 AUTOCONF = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run autoconf
 AUTOHEADER = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run autoheader
 AUTOMAKE = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run automake-1.11
+=======
+MISSING = ${top_srcdir}/missing
+ACLOCAL = ${SHELL} ${MISSING} --run aclocal-1.11
+AMTAR = $${TAR-tar}
+AUTOCONF = ${SHELL} ${MISSING} --run autoconf
+AUTOHEADER = ${SHELL} ${MISSING} --run autoheader
+AUTOMAKE = ${SHELL} ${MISSING} --run automake-1.11
+>>>>>>> afbe01d4f594e587d48a12686a313dd075eec0f7
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
@@ -159,7 +168,11 @@ LIBOBJS =
 LIBS = -levent -lev 
 LN_S = ln -s
 LTLIBOBJS = 
+<<<<<<< HEAD
 MAKEINFO = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run makeinfo
+=======
+MAKEINFO = ${SHELL} ${MISSING} --run makeinfo
+>>>>>>> afbe01d4f594e587d48a12686a313dd075eec0f7
 MKDIR_P = /bin/mkdir -p
 OBJEXT = o
 PACKAGE = linklayertool
