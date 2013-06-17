@@ -40,6 +40,9 @@
 
 /***************************************************************** DATA TYPES */
 
+/*!< Ethernet broadcast address. */
+extern const unsigned char ETH_ADDR_BROADCAST[ETH_ALEN];
+
 typedef struct ethhdr eth_header_t;		/*!< Data type definition for ethhdr. */
 
 /*!
@@ -94,13 +97,14 @@ ieee8023_frame_t *new_ieee8023_frame();
 /*!
 	\brief Prints the given IEEE 802.3 frame.
 	\param frame The IEEE 802.3 frame to be printed.
+	\return EX_OK if everything was correct; otherwise < 0.
  */
-void print_ieee8023_frame(const ieee8023_frame_t *frame);
+int print_ieee8023_frame(const ieee8023_frame_t *frame);
 
 /*!
 	\brief Reads from a socket an IEEE 802.3 frame.
 	\param socket_fd The socket from where to read the frame.
-	\return A pointer to the frame.
+	\return EX_OK if everything was correct; otherwise < 0.
  */
 #ifdef KERNEL_RING
 	int read_ieee8023_frame(const void *rx_ring, ieee8023_frame_t *rx_frame);
@@ -113,11 +117,12 @@ void print_ieee8023_frame(const ieee8023_frame_t *frame);
 /*!
 	\brief Prints the data field of the given IEEE 802.3 frame.
 	\param frame The IEEE 802.3 frame whose data is to be printed.
+	\return EX_OK if everything was correct; otherwise < 0.
  */
-void print_eth_data(const ieee8023_frame_t *frame);
+int print_eth_data(const ieee8023_frame_t *frame);
 
 /*!
-	\brief Prints the given ethernet address.
+	\brief Prints the given Ethernet address.
 	\param eth_address Ethernet address as an array.
  */
 void print_eth_address(const unsigned char *eth_address);

@@ -29,6 +29,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
 #include <linux/if_packet.h>
@@ -91,12 +92,14 @@ typedef struct ll_socket
 	
 	struct ev_loop *loop;					/*!< Default event loop. */
 	struct ev_io *rx_watcher;				/*!< Frame rx watcher. */
+	struct ev_io *tx_watcher;				/*!< Frame tx watcher. */
 
 	int state;					/*!< Function state of the ll_socket. */
 	
 	int ll_sap;					/*!< Link layer level Service Access Point. */
 	char if_name[IF_NAMESIZE];	/*!< Name of the link layer level if. */
 	int if_index;				/*!< Index of the link layer level if.*/
+	char if_mac[ETH_ALEN];		/*!< MAC address of the link layer level if. */
 
 } ll_socket_t;
 
@@ -115,6 +118,9 @@ typedef struct ev_io_arg
 #ifdef KERNEL_RING
 	void *rx_ring;					/*!< Kernel RX_RING. */
 #endif
+
+	int ll_sap;						/*!< Link layer SAP. */
+	unsigned char if_mac[ETH_ALEN];	/*!< MAC of the link layer interface. */
 
 	ieee8023_frame_t *rx_frame;		/*!< Buffer for frames reception. */
 
@@ -157,7 +163,13 @@ tpacket_req_t *new_tpacket_req();
 ev_io_arg_t *new_ev_io_arg();
 
 /*!
-	\brief Initializes a new ev_io_arg structure.
+	\brief Allocates memory for a buffer that holds a MAC address.
+	\return A pointer to the newly allocated block of memory.
+*/
+unsigned char *new_mac_buffer();
+
+/*!
+	\brief Initializes a new ev_io_tx_arg structure.
 	\return A pointer to the newly allocated block of memory.
 */
 ev_io_arg_t *init_ev_io_arg(ll_socket_t *ll_socket);
@@ -192,6 +204,40 @@ sockaddr_ll_t *init_sockaddr_ll(const ll_socket_t *ll_socket);
 */
 int if_name_2_if_index(const int socket_fd, const char *if_name);
 
+/*!
+	\brief Gets the MAC address of the given interface.
+	\param socket_fd Identifier of the socket.
+	\param if_name The name of the link layer level interface.
+	\return EX_OK if the execution was correct, <0 otherwise.
+*/
+int get_mac_address
+	(const int socket_fd, const char *if_name, unsigned char *mac);
+
+/*!
+ * 	\brief Initializes an ieee8023_frame structure with the information given
+ * 			by the current ll_socket structure.
+ * 	\param ll_sap Link layer Service Access Point.
+ * 	\param h_source Pointer to the MAC source address.
+ * 	\param h_dest Pointer to the buffer that holds the MAC destination.
+ * 	\return A pointer to the initialized frame.
+ */
+ieee8023_frame_t *init_ieee8023_frame
+	(	const int ll_sap,
+		const unsigned char *h_source,
+		const const unsigned char *h_dest	);
+
+/*!
+	\brief Writes to a socket an IEEE 802.3 frame, filled up with null data.
+	\param socket_fd The socket where to write the frame.
+	\return EX_OK if everything was correct; othewise < 0.
+ */
+#ifdef KERNEL_RING
+	// TODO int __tx_ieee8023_test_frame(const void *tx_ring);
+#else
+	int __tx_ieee8023_test_frame
+		(const int socket_fd, const int ll_sap, const unsigned char *h_source);
+#endif
+
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 // LL_SOCKET MANAGEMENT
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -205,21 +251,27 @@ ll_socket_t *new_ll_socket();
 /*!
 	\brief Creates a RAW socket with TX and RX buffers initialized and mmap()ed
 			to the appropriate kernelspace memory.
+	\param bool Flag that indicates whether the socket shall also transmit
+				test frames within its own loop.
 	\param ll_if_name Name of the link layer level interface to be used.
 	\param ll_sap Service access point to be used.
 	\return Structure containing all information necessary for handling this
 			socket. A 'NULL' value indicates that an unsupported error has
 			ocurred.
 */
-ll_socket_t *init_ll_socket(const char *ll_if_name, const int ll_sap);
+ll_socket_t *init_ll_socket
+	(const bool is_transmitter, const char *ll_if_name, const int ll_sap);
 
 /*!
 	\brief Opens a new socket without binding it.
+	\param bool Flag that indicates whether the socket shall also transmit
+				test frames within its own loop.
 	\param ll_if_name Name of the link layer level interface.
 	\param ll_sap Link layer service access point.
 	\return Socket information structure or NULL if a problem occurred.
 */
-ll_socket_t *open_ll_socket(const char* ll_if_name, const int ll_sap);
+ll_socket_t *open_ll_socket
+	(const bool is_transmitter, const char* ll_if_name, const int ll_sap);
 
 /*!
 	\brief Creates and binds a new socket to the given SAP of the link layer.
@@ -293,11 +345,16 @@ int close_rings(const ll_socket_t *ll_socket);
 
 /*!
 	\brief Initializes libev for its usage with this ll_socket library.
+	\param bool Flag that indicates whether the socket shall also transmit
+				test frames within its own loop.
 	\param ll_socket The ll_socket whose resources for the usage of the
 						libev library are to be created.
 	\return EX_OK in case of a correct execution, <0 otherwise.
 */
-int init_events(ll_socket_t* ll_socket);
+int init_events(const bool is_transmitter, ll_socket_t *ll_socket);
+
+int init_rx_events(ll_socket_t *ll_socket);
+int init_tx_events(ll_socket_t *ll_socket);
 
 /*!
 	\brief Closes all resources related with the usage of the libev library.
@@ -311,6 +368,14 @@ int close_events(const ll_socket_t *ll_socket);
 	\brief Callback function for frames reception, <libev>.
 */
 void cb_process_frame_rx
+	(struct ev_loop *loop, struct ev_io *watcher, int revents);
+
+#define WAIT_AFTER_TEST_TX 1000000 	/*!< ms after a successfull test tx. */
+
+/*!
+	\brief Callback function for frames transmission, <libev>.
+*/
+void cb_process_frame_tx
 	(struct ev_loop *loop, struct ev_io *watcher, int revents);
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

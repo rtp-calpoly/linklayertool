@@ -21,7 +21,11 @@
  */
  
  #include "ll_frame.h"
- 
+
+/*!< Ethernet broadcast address. */
+const unsigned char ETH_ADDR_BROADCAST[ETH_ALEN]
+                                    = { 0xFF, 0xFF, 0XFF, 0xFF, 0xFF, 0xFF };
+
 /* new_ethhdr */
 struct ethhdr *new_ethhdr()
 {
@@ -33,13 +37,14 @@ struct ethhdr *new_ethhdr()
 
 }
 
-/* new_ll_frame */
+/* new_ieee8023_frame */
 ieee8023_frame_t *new_ieee8023_frame()
 {
 
 	ieee8023_frame_t *buffer = NULL;
 	buffer = (ieee8023_frame_t *)malloc(ETH_FRAME_LEN);
 	memset(buffer, 0, ETH_FRAME_LEN);
+	buffer->frame_len = ETH_FRAME_LEN;
 	return(buffer);
 
 }
@@ -83,7 +88,7 @@ int read_ieee8023_frame(const int socket_fd, ieee8023_frame_t *rx_frame)
 #endif
 
 /* print_ieee8023_frame */
-void print_ieee8023_frame(const ieee8023_frame_t *frame)
+int print_ieee8023_frame(const ieee8023_frame_t *frame)
 {
 
 	log_app_msg(">>>>> IEEE 802.3 frame:\n");
@@ -93,10 +98,13 @@ void print_ieee8023_frame(const ieee8023_frame_t *frame)
 	log_app_msg("\t* header->src = ");
 		print_eth_address(frame->frame.header.h_source);
 		log_app_msg("\n");
-	log_app_msg("\t* header->sap = %d\n", frame->frame.header.h_proto);
+	log_app_msg("\t* header->sap = %02X\n", frame->frame.header.h_proto);
 	log_app_msg("\t* header->data[%d] = ", frame->frame_len - ETH_HLEN);
-		print_eth_data(frame);
+		if ( print_eth_data(frame) < 0 )
+			{ return(EX_ERR); }
 		log_app_msg("\n");
+
+	return(EX_OK);
 
 }
 
@@ -104,7 +112,7 @@ void print_ieee8023_frame(const ieee8023_frame_t *frame)
 void print_eth_address(const unsigned char *eth_address)
 {
 
-	printf("%02x:%02x:%02x:%02x:%02x:%02x",
+	printf("%02X:%02X:%02X:%02X:%02X:%02X",
   			(unsigned char) eth_address[0],
   			(unsigned char) eth_address[1],
   			(unsigned char) eth_address[2],
@@ -115,11 +123,14 @@ void print_eth_address(const unsigned char *eth_address)
 }
 
 /* print_eth_data */
-void print_eth_data(const ieee8023_frame_t *frame)
+int print_eth_data(const ieee8023_frame_t *frame)
 {
 
 	int data_len = frame->frame_len - ETH_HLEN;
 	int last_byte = data_len - 1;
+
+	if ( data_len < 0 )
+		{ return(EX_WRONG_PARAM); }
 
 	for ( int i = 0; i < data_len; i++ )
 	{
@@ -129,5 +140,7 @@ void print_eth_data(const ieee8023_frame_t *frame)
 		log_app_msg("%02X", 0xFF & (unsigned int)frame->frame.data[i]);
 		if ( i < last_byte ) { log_app_msg(":"); }
 	}
+
+	return(EX_OK);
 
 }

@@ -70,6 +70,15 @@ ev_io_arg_t *new_ev_io_arg()
 	return(buffer);
 }
 
+/* new_mac_buffer */
+unsigned char *new_mac_buffer()
+{
+	unsigned char *buffer = NULL;
+	buffer = (unsigned char *)malloc(ETH_ALEN);
+	memset (buffer, 0, ETH_ALEN);
+	return(buffer);
+}
+
 /* init_ev_io_arg */
 ev_io_arg_t *init_ev_io_arg(ll_socket_t *ll_socket)
 {
@@ -79,6 +88,8 @@ ev_io_arg_t *init_ev_io_arg(ll_socket_t *ll_socket)
 		buffer->rx_ring = ll_socket->rx_ring_buffer;
 	#else
 		buffer->rx_frame = ll_socket->rx_frame;
+		buffer->ll_sap = ll_socket->ll_sap;
+		memcpy(buffer->if_mac, ll_socket->if_mac, ETH_ALEN);
 	#endif
 
 	return(buffer);
@@ -137,6 +148,93 @@ int if_name_2_if_index(const int socket_fd, const char *if_name)
 
 }
 
+/* get_mac_address */
+int get_mac_address
+	(const int socket_fd, const char *if_name, unsigned char *mac)
+{
+
+	int len_if_name = -1;
+
+	if ( if_name == NULL )
+		{ return(EX_NULL_PARAM); }
+	if ( mac == NULL )
+		{ return(EX_NULL_PARAM); }
+
+	if ( socket_fd < 0 )
+		{ return(EX_WRONG_PARAM); }
+
+	len_if_name = strlen(if_name);
+
+	if ( len_if_name == 0 )
+		{ return(EX_EMPTY_PARAM); }
+	if ( len_if_name > IF_NAMESIZE )
+		{ return(EX_WRONG_PARAM); }
+
+	ifreq_t *ifr = new_ifreq();
+	strncpy(ifr->ifr_name, if_name, len_if_name);
+
+	if ( ioctl(socket_fd, SIOCGIFHWADDR, ifr) < 0 )
+	{
+		log_sys_error("Could not get interface index");
+		return(EX_SYS);
+	}
+
+	memcpy(mac, ifr->ifr_hwaddr.sa_data, ETH_ALEN);
+
+	return(EX_OK);
+
+}
+
+/* init_ieee8023_frame */
+ieee8023_frame_t *init_ieee8023_frame
+	(	const int ll_sap,
+		const unsigned char *h_source,
+		const const unsigned char *h_dest	)
+{
+
+	ieee8023_frame_t *buffer = new_ieee8023_frame();
+
+	buffer->frame.header.h_proto = ll_sap;
+	memcpy(buffer->frame.header.h_dest, h_dest, ETH_ALEN);
+	memcpy(buffer->frame.header.h_source, h_source, ETH_ALEN);
+
+	return(buffer);
+
+}
+
+/* __tx_ieee8023_test_frame */
+int __tx_ieee8023_test_frame
+	(const int socket_fd, const int ll_sap, const unsigned char *h_source)
+{
+
+	ieee8023_frame_t *tx_frame
+		= init_ieee8023_frame(ll_sap, h_source, ETH_ADDR_BROADCAST);
+	tx_frame->frame_len = ETH_HLEN + 10;
+
+	if ( print_ieee8023_frame(tx_frame) < 0 )
+	{
+		log_app_msg("Frame formatted incorrectly!\n");
+		return(EX_ERR);
+	}
+
+	int b_written = write(socket_fd, tx_frame, ETH_FRAME_LEN);
+
+	if ( b_written < 0 )
+	{
+		log_sys_error("Frame could not be sent");
+		return(EX_SYS);
+	}
+
+	if ( b_written < ETH_FRAME_LEN )
+	{
+		log_sys_error("Could not transmit all bytes as requested");
+		return(EX_SYS);
+	}
+
+	return(EX_OK);
+
+}
+
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 // LL_SOCKET MANAGEMENT
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -151,7 +249,8 @@ ll_socket_t *new_ll_socket()
 }
 
 /* init_ll_socket */
-ll_socket_t *init_ll_socket(const char *ll_if_name, const int ll_sap)
+ll_socket_t *init_ll_socket
+	(const bool is_transmitter, const char *ll_if_name, const int ll_sap)
 {
 
 	#ifdef KERNEL_RING
@@ -197,18 +296,26 @@ ll_socket_t *init_ll_socket(const char *ll_if_name, const int ll_sap)
 		int socket_fd = tx_socket_fd;
 	#endif
 	if ( ( ll_if_index = if_name_2_if_index(socket_fd, ll_if_name) ) < 0 )
-	{
-		handle_app_error(	"Could not get interface index, if_name = %s\n", 
-							ll_if_name	);
-	}
+		{ handle_app_error("Could not get index, if_name = %s\n", ll_if_name); }
 	
 	strncpy(s->if_name, ll_if_name, strlen(ll_if_name));
 	s->if_index = ll_if_index;
 	
-	log_app_msg("IF: name = %s, index = %d\n", ll_if_name, ll_if_index);
-	
-	// 4) initialize libevent
-	if ( init_events(s) < 0 )
+	// 4) get interface MAC address from interface name
+	if ( get_mac_address
+			(socket_fd, ll_if_name, (unsigned char *)s->if_mac) < 0 )
+	{
+		handle_app_error(	"Could not get MAC address, if_name = %s\n"
+							, ll_if_name	);
+
+	}
+
+	log_app_msg("IF: name = %s, index = %d, MAC = ", ll_if_name, ll_if_index);
+		print_eth_address((unsigned char *)s->if_mac);
+		log_app_msg("\n");
+
+	// 5) initialize events
+	if ( init_events(is_transmitter, s) < 0 )
 		{ handle_app_error("Could not initialize event manager!"); }
 
 	// Ready is socket's final state
@@ -219,11 +326,12 @@ ll_socket_t *init_ll_socket(const char *ll_if_name, const int ll_sap)
 }
 
 /* new_ll_socket */
-ll_socket_t *open_ll_socket(const char* ll_if_name, const int ll_sap)
+ll_socket_t *open_ll_socket
+	(const bool is_transmitter, const char* ll_if_name, const int ll_sap)
 {
 
 	// 1) create RAW socket
-	ll_socket_t *ll_socket = init_ll_socket(ll_if_name, ll_sap);
+	ll_socket_t *ll_socket = init_ll_socket(is_transmitter, ll_if_name, ll_sap);
 	
 	// 2) initialize rings for frames tx+rx
 	#ifdef KERNEL_RING
@@ -459,7 +567,37 @@ int close_rings(const ll_socket_t *ll_socket)
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 /* init_events */
-int init_events(ll_socket_t *ll_socket)
+int init_events(const bool is_transmitter, ll_socket_t *ll_socket)
+{
+
+
+	if ( is_transmitter == true )
+	{
+
+		if ( init_tx_events(ll_socket) < 0 )
+			{ handle_app_error("Could not initialize TX events with libev!"); }
+
+		log_app_msg("Frame reception is disabled.\n");
+		return(EX_OK);
+
+	}
+	else
+	{
+
+		if ( init_rx_events(ll_socket) < 0 )
+			{ handle_app_error("Could not initialize RX events with libev!"); }
+
+		log_app_msg("Frame transmission is disabled.\n");
+		return(EX_OK);
+
+	}
+
+	return(EX_OK);
+
+}
+
+/* init_rx_events */
+int init_rx_events(ll_socket_t *ll_socket)
 {
 
 	ll_socket->loop = EV_DEFAULT;
@@ -479,6 +617,38 @@ int init_events(ll_socket_t *ll_socket)
 	ev_io_start(ll_socket->loop, ll_socket->rx_watcher);
 
     return(EX_OK);
+
+}
+
+/* init_tx_events */
+int init_tx_events(ll_socket_t *ll_socket)
+{
+
+	log_app_msg("Starting test tx in loop mode...\n");
+
+	ll_socket->loop = EV_DEFAULT;
+	ev_io_arg_t *arg = init_ev_io_arg(ll_socket);
+	ll_socket->tx_watcher = &arg->watcher;
+
+	printf(">2 ll_sap = %d, h_dest = ", arg->ll_sap);
+		print_eth_address(ETH_ADDR_BROADCAST);
+		printf(", h_source = ");
+		print_eth_address(arg->if_mac);
+		printf("\n");
+
+#ifdef KERNEL_RING
+	ev_io_init(	ll_socket->tx_watcher, cb_process_frame_tx,
+				ll_socket->tx_socket_fd,
+				EV_WRITE	);
+#else
+	ev_io_init(	ll_socket->tx_watcher, cb_process_frame_tx,
+				ll_socket->socket_fd,
+				EV_WRITE	);
+#endif
+
+	ev_io_start(ll_socket->loop, ll_socket->tx_watcher);
+
+	return(EX_OK);
 
 }
 
@@ -517,6 +687,38 @@ void cb_process_frame_rx
 	}
 
 	print_ieee8023_frame(arg->rx_frame);
+
+}
+
+/* cb_process_frame_tx */
+void cb_process_frame_tx
+	(struct ev_loop *loop, struct ev_io *watcher, int revents)
+{
+
+	if( EV_ERROR & revents )
+	{
+		log_sys_error("Invalid event");
+		return;
+	}
+
+	ev_io_arg_t *arg = (ev_io_arg_t *)watcher;
+
+#ifdef KERNEL_RING
+	// TODO
+#else
+	// TODO create argument for passing it to the tx event.
+	if ( __tx_ieee8023_test_frame(watcher->fd, arg->ll_sap, arg->if_mac) < 0 )
+#endif
+	{
+		log_app_msg("Could not transmit test frame.");
+		return;
+	}
+
+	if ( usleep(WAIT_AFTER_TEST_TX) < 0 )
+	{
+		log_app_msg("Could not usleep.");
+		return;
+	}
 
 }
 

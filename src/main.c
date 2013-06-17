@@ -71,7 +71,9 @@ int main(int argc, char **argv)
 	print_configuration(cfg);
 
 	/* 2) Link layer socket is open. */
-	if ( ( ll_socket = open_ll_socket(cfg->if_name, cfg->lsap) ) == NULL )
+	if ( ( ll_socket = open_ll_socket
+						(cfg->is_transmitter, cfg->if_name, cfg->lsap) )
+			== NULL )
 		{ handle_app_error("Could not open ll_socket.\n"); }
 	
 	#ifdef KERNEL_RING
@@ -84,17 +86,14 @@ int main(int argc, char **argv)
 	/* 3) Set-up this programe either as a transmitter or a receiver. */
 	if ( cfg->is_transmitter == true )
 	{
-	
 		log_app_msg("Setting up transmitter mode...\n");
-		
 	}
 	else
 	{
-	
 		log_app_msg("Setting up receiver mode...\n");
-		start_ll_socket(ll_socket);
-		
 	}
+
+	start_ll_socket(ll_socket);
 
 	// 4) sockets are closed before exiting application
 	close_ll_socket(ll_socket);

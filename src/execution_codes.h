@@ -35,6 +35,7 @@
 #define EX_OK			0		/*!< Execution correct. */
 #define EX_ERR			-1		/*!< Generic execution error. */
 #define EX_EOF			-2		/*!< End-of-file indicator. */
+#define EX_SYS			-3		/*!< System error. */
 
 #define EX_EMPTY_PARAM	-30		/*!< Empty input parameter. */
 #define EX_NULL_PARAM	-31		/*!< NULL input parameter. */
