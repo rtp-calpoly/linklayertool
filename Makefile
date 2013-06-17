@@ -125,11 +125,12 @@ distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
-ACLOCAL = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/rtubio@linklayertool.github.com/missing --run aclocal-1.11
+MISSING = ${top_srcdir}/missing
+ACLOCAL = ${SHELL} ${MISSING} --run aclocal-1.11
 AMTAR = $${TAR-tar}
-AUTOCONF = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/rtubio@linklayertool.github.com/missing --run autoconf
-AUTOHEADER = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/rtubio@linklayertool.github.com/missing --run autoheader
-AUTOMAKE = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/rtubio@linklayertool.github.com/missing --run automake-1.11
+AUTOCONF = ${SHELL} ${MISSING} --run autoconf
+AUTOHEADER = ${SHELL} ${MISSING} --run autoheader
+AUTOMAKE = ${SHELL} ${MISSING} --run automake-1.11
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
@@ -159,7 +160,7 @@ LIBOBJS =
 LIBS = -levent -lev 
 LN_S = ln -s
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/rtubio@linklayertool.github.com/missing --run makeinfo
+MAKEINFO = ${SHELL} ${MISSING} --run makeinfo
 MKDIR_P = /bin/mkdir -p
 OBJEXT = o
 PACKAGE = linklayertool
