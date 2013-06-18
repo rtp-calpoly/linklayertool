@@ -56,14 +56,15 @@ int read_configuration(int argc, char** argv, configuration_t* cfg)
 		{"help",	no_argument,		NULL, 	'h'	},
 		{"verbose",	no_argument,		NULL,	'e'	},
 		{"version",	no_argument,		NULL, 	'v'	},
-		{"tx",		no_argument,		NULL, 	't'	},
+		{"tx",		required_argument,	NULL, 	't'	},
 		{"rx",  	no_argument,		NULL, 	'r'	},
 		{"lsap", 	required_argument,	NULL, 	'l'	},
 		{"if",		required_argument,	NULL,	'i'	},
 		{0,0,0,0}
 	};
 	
-	while ( ( read = getopt_long(argc, argv, "ehvtrl:i:", args, &index) ) > -1 )
+	while
+		( ( read = getopt_long(argc, argv, "ehvt:rl:i:", args, &index) ) > -1 )
 	{
 		
 		switch(read)
@@ -71,6 +72,7 @@ int read_configuration(int argc, char** argv, configuration_t* cfg)
 			case 't':
 				
 				cfg->is_transmitter = true;
+				cfg->tx_delay = atoi(optarg);
 				break;
 				
 			case 'r':
@@ -132,6 +134,14 @@ int check_configuration(const configuration_t *cfg)
 	if ( ! ( cfg->is_transmitter != cfg->is_receiver ) )
 	{
 		handle_app_error("Only tx or rx can be activated at a time.\n");
+	}
+
+	if ( cfg->is_transmitter == true )
+	{
+		if ( cfg->tx_delay <= 0 )
+		{
+			handle_app_error("tx_delay must be bigger than 0.\n");
+		}
 	}
 
 	if ( cfg->lsap <= 0 )

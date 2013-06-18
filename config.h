@@ -11,7 +11,7 @@
 #define HAVE_LIBEV 1
 
 /* Define to 1 if you have the `event' library (-levent). */
-#define HAVE_LIBEVENT 1
+/* #undef HAVE_LIBEVENT */
 
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
