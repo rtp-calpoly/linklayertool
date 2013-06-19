@@ -20,7 +20,7 @@
  * along with linklayertool.  If not, see <http://www.gnu.org/licenses/>.
  */
  
- #include "ll_frame.h"
+ #include "ieee8023_frame.h"
 
 /*!< Ethernet broadcast address. */
 const unsigned char ETH_ADDR_BROADCAST[ETH_ALEN]

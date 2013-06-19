@@ -23,7 +23,7 @@
 #ifndef LL_SOCKET_H_
 #define LL_SOCKET_H_
 
-#include "ll_frame.h"
+#include "ieee8023_frame.h"
 #include "execution_codes.h"
 #include "logger.h"
 

@@ -40,7 +40,7 @@
 	#include <linux/if_packet.h>
 #endif
 
-/***************************************************************** DATA TYPES */
+/****************************************************** IEEE 802.3 structures */
 
 /*!< Ethernet broadcast address. */
 extern const unsigned char ETH_ADDR_BROADCAST[ETH_ALEN];
@@ -77,7 +77,7 @@ typedef struct ieee8023_frame
 
 #define LEN__IEEE8023_FRAME sizeof(ieee8023_frame_t)
 
-/****************************************************************** FUNCTIONS */
+/******************************************************* IEEE 802.3 functions */
 
 /*!
 	\brief Allocates memory for an ethhdr structure, including MAX PAYLOAD.

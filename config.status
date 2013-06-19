@@ -393,7 +393,7 @@ on `(hostname || uname -n) 2>/dev/null | sed 1q`
 "
 
 # Files that config.status was made for.
-config_files=" Makefile docs/Makefile scripts/Makefile src/Makefile"
+config_files=" docs/Doxyfile Makefile docs/Makefile scripts/Makefile src/Makefile"
 config_headers=" config.h"
 config_commands=" depfiles"
 
@@ -437,11 +437,11 @@ Copyright (C) 2012 Free Software Foundation, Inc.
 This config.status script is free software; the Free Software Foundation
 gives unlimited permission to copy, distribute and modify it."
 
-ac_pwd='/home/siscoga/__marajota_shared/siscoga-workspace/linklayertool'
+ac_pwd='/home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool'
 srcdir='.'
 INSTALL='/usr/bin/install -c'
 MKDIR_P='/bin/mkdir -p'
-AWK='mawk'
+AWK='gawk'
 test -n "$AWK" || AWK=awk
 # The default lists apply if the user does not specify any file.
 ac_need_defaults=:
@@ -627,9 +627,9 @@ S["GREP"]="/bin/grep"
 S["RANLIB"]="ranlib"
 S["LN_S"]="ln -s"
 S["CPP"]="gcc -E"
-S["HAVE_DOXYGEN_FALSE"]=""
-S["HAVE_DOXYGEN_TRUE"]="#"
-S["DOXYGEN"]=""
+S["HAVE_DOXYGEN_FALSE"]="#"
+S["HAVE_DOXYGEN_TRUE"]=""
+S["DOXYGEN"]="doxygen"
 S["am__fastdepCC_FALSE"]="#"
 S["am__fastdepCC_TRUE"]=""
 S["CCDEPMODE"]="depmode=gcc3"
@@ -658,17 +658,17 @@ S["am__tar"]="$${TAR-tar} chof - \"$$tardir\""
 S["AMTAR"]="$${TAR-tar}"
 S["am__leading_dot"]="."
 S["SET_MAKE"]=""
-S["AWK"]="mawk"
+S["AWK"]="gawk"
 S["mkdir_p"]="/bin/mkdir -p"
 S["MKDIR_P"]="/bin/mkdir -p"
 S["INSTALL_STRIP_PROGRAM"]="$(install_sh) -c -s"
 S["STRIP"]=""
-S["install_sh"]="${SHELL} /home/siscoga/__marajota_shared/siscoga-workspace/linklayertool/install-sh"
-S["MAKEINFO"]="${SHELL} /home/siscoga/__marajota_shared/siscoga-workspace/linklayertool/missing --run makeinfo"
-S["AUTOHEADER"]="${SHELL} /home/siscoga/__marajota_shared/siscoga-workspace/linklayertool/missing --run autoheader"
-S["AUTOMAKE"]="${SHELL} /home/siscoga/__marajota_shared/siscoga-workspace/linklayertool/missing --run automake-1.11"
-S["AUTOCONF"]="${SHELL} /home/siscoga/__marajota_shared/siscoga-workspace/linklayertool/missing --run autoconf"
-S["ACLOCAL"]="${SHELL} /home/siscoga/__marajota_shared/siscoga-workspace/linklayertool/missing --run aclocal-1.11"
+S["install_sh"]="${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/install-sh"
+S["MAKEINFO"]="${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run makeinfo"
+S["AUTOHEADER"]="${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run autoheader"
+S["AUTOMAKE"]="${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run automake-1.11"
+S["AUTOCONF"]="${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run autoconf"
+S["ACLOCAL"]="${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run aclocal-1.11"
 S["VERSION"]="0.1"
 S["PACKAGE"]="linklayertool"
 S["CYGPATH_W"]="echo"
@@ -774,12 +774,17 @@ D["HAVE_STRINGS_H"]=" 1"
 D["HAVE_INTTYPES_H"]=" 1"
 D["HAVE_STDINT_H"]=" 1"
 D["HAVE_UNISTD_H"]=" 1"
+D["HAVE_ARPA_INET_H"]=" 1"
+D["HAVE_FCNTL_H"]=" 1"
+D["HAVE_INTTYPES_H"]=" 1"
 D["HAVE_NETINET_IN_H"]=" 1"
 D["HAVE_STDDEF_H"]=" 1"
+D["HAVE_STDINT_H"]=" 1"
 D["HAVE_STDLIB_H"]=" 1"
 D["HAVE_STRING_H"]=" 1"
 D["HAVE_SYS_IOCTL_H"]=" 1"
 D["HAVE_SYS_SOCKET_H"]=" 1"
+D["HAVE_SYS_TIME_H"]=" 1"
 D["HAVE_UNISTD_H"]=" 1"
 D["HAVE__BOOL"]=" 1"
 D["HAVE_STDLIB_H"]=" 1"
@@ -790,9 +795,13 @@ D["HAVE_SYS_PARAM_H"]=" 1"
 D["HAVE_GETPAGESIZE"]=" 1"
 D["HAVE_MMAP"]=" 1"
 D["HAVE_GETPAGESIZE"]=" 1"
+D["HAVE_GETTIMEOFDAY"]=" 1"
 D["HAVE_MEMSET"]=" 1"
 D["HAVE_MUNMAP"]=" 1"
+D["HAVE_SELECT"]=" 1"
 D["HAVE_SOCKET"]=" 1"
+D["HAVE_STRTOL"]=" 1"
+D["HAVE_STRTOUL"]=" 1"
   for (key in D) D_is_set[key] = 1
   FS = ""
 }

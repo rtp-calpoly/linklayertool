@@ -7,3 +7,16 @@ src/.deps
 /config.log
 /config.status
 /Makefile
+/config.h.in
+/configure
+/configure.ac
+/autoscan.log
+/config.guess
+/config.sub
+/depcomp
+/install-sh
+/libtool
+/ltmain.sh
+/Makefile.am
+/Makefile.in
+/missing

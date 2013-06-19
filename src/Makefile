@@ -63,7 +63,7 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_linklayertool_OBJECTS = configuration.$(OBJEXT) \
-	gn_statemachine.$(OBJEXT) ll_frame.$(OBJEXT) \
+	gn_statemachine.$(OBJEXT) ieee8023_frame.$(OBJEXT) \
 	ll_socket.$(OBJEXT) main.$(OBJEXT)
 linklayertool_OBJECTS = $(am_linklayertool_OBJECTS)
 linklayertool_LDADD = $(LDADD)
@@ -85,12 +85,12 @@ am__can_run_installinfo = \
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /home/siscoga/__marajota_shared/siscoga-workspace/linklayertool/missing --run aclocal-1.11
+ACLOCAL = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run aclocal-1.11
 AMTAR = $${TAR-tar}
-AUTOCONF = ${SHELL} /home/siscoga/__marajota_shared/siscoga-workspace/linklayertool/missing --run autoconf
-AUTOHEADER = ${SHELL} /home/siscoga/__marajota_shared/siscoga-workspace/linklayertool/missing --run autoheader
-AUTOMAKE = ${SHELL} /home/siscoga/__marajota_shared/siscoga-workspace/linklayertool/missing --run automake-1.11
-AWK = mawk
+AUTOCONF = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run autoconf
+AUTOHEADER = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run autoheader
+AUTOMAKE = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run automake-1.11
+AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
 
@@ -104,7 +104,7 @@ CXXFLAGS = -g -O2
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
-DOXYGEN = 
+DOXYGEN = doxygen
 ECHO_C = 
 ECHO_N = -n
 ECHO_T = 
@@ -121,7 +121,7 @@ LIBOBJS =
 LIBS = -lev 
 LN_S = ln -s
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /home/siscoga/__marajota_shared/siscoga-workspace/linklayertool/missing --run makeinfo
+MAKEINFO = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run makeinfo
 MKDIR_P = /bin/mkdir -p
 OBJEXT = o
 PACKAGE = linklayertool
@@ -137,10 +137,10 @@ SET_MAKE =
 SHELL = /bin/bash
 STRIP = 
 VERSION = 0.1
-abs_builddir = /home/siscoga/__marajota_shared/siscoga-workspace/linklayertool/src
-abs_srcdir = /home/siscoga/__marajota_shared/siscoga-workspace/linklayertool/src
-abs_top_builddir = /home/siscoga/__marajota_shared/siscoga-workspace/linklayertool
-abs_top_srcdir = /home/siscoga/__marajota_shared/siscoga-workspace/linklayertool
+abs_builddir = /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/src
+abs_srcdir = /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/src
+abs_top_builddir = /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool
+abs_top_srcdir = /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool
 ac_ct_CC = gcc
 ac_ct_CXX = g++
 am__include = include
@@ -160,7 +160,7 @@ host_alias =
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/siscoga/__marajota_shared/siscoga-workspace/linklayertool/install-sh
+install_sh = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -180,7 +180,7 @@ target_alias =
 top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
-linklayertool_SOURCES = configuration.c core/gn_statemachine.c ll_library/ll_frame.c ll_library/ll_socket.c main.c
+linklayertool_SOURCES = configuration.c core/gn_statemachine.c ll_library/ieee8023_frame.c ll_library/ll_socket.c main.c
 all: all-am
 
 .SUFFIXES:
@@ -267,7 +267,7 @@ distclean-compile:
 
 include ./$(DEPDIR)/configuration.Po
 include ./$(DEPDIR)/gn_statemachine.Po
-include ./$(DEPDIR)/ll_frame.Po
+include ./$(DEPDIR)/ieee8023_frame.Po
 include ./$(DEPDIR)/ll_socket.Po
 include ./$(DEPDIR)/main.Po
 
@@ -299,19 +299,19 @@ gn_statemachine.obj: core/gn_statemachine.c
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gn_statemachine.obj `if test -f 'core/gn_statemachine.c'; then $(CYGPATH_W) 'core/gn_statemachine.c'; else $(CYGPATH_W) '$(srcdir)/core/gn_statemachine.c'; fi`
 
-ll_frame.o: ll_library/ll_frame.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ll_frame.o -MD -MP -MF $(DEPDIR)/ll_frame.Tpo -c -o ll_frame.o `test -f 'll_library/ll_frame.c' || echo '$(srcdir)/'`ll_library/ll_frame.c
-	$(am__mv) $(DEPDIR)/ll_frame.Tpo $(DEPDIR)/ll_frame.Po
-#	source='ll_library/ll_frame.c' object='ll_frame.o' libtool=no \
+ieee8023_frame.o: ll_library/ieee8023_frame.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ieee8023_frame.o -MD -MP -MF $(DEPDIR)/ieee8023_frame.Tpo -c -o ieee8023_frame.o `test -f 'll_library/ieee8023_frame.c' || echo '$(srcdir)/'`ll_library/ieee8023_frame.c
+	$(am__mv) $(DEPDIR)/ieee8023_frame.Tpo $(DEPDIR)/ieee8023_frame.Po
+#	source='ll_library/ieee8023_frame.c' object='ieee8023_frame.o' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
-#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ll_frame.o `test -f 'll_library/ll_frame.c' || echo '$(srcdir)/'`ll_library/ll_frame.c
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ieee8023_frame.o `test -f 'll_library/ieee8023_frame.c' || echo '$(srcdir)/'`ll_library/ieee8023_frame.c
 
-ll_frame.obj: ll_library/ll_frame.c
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ll_frame.obj -MD -MP -MF $(DEPDIR)/ll_frame.Tpo -c -o ll_frame.obj `if test -f 'll_library/ll_frame.c'; then $(CYGPATH_W) 'll_library/ll_frame.c'; else $(CYGPATH_W) '$(srcdir)/ll_library/ll_frame.c'; fi`
-	$(am__mv) $(DEPDIR)/ll_frame.Tpo $(DEPDIR)/ll_frame.Po
-#	source='ll_library/ll_frame.c' object='ll_frame.obj' libtool=no \
+ieee8023_frame.obj: ll_library/ieee8023_frame.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ieee8023_frame.obj -MD -MP -MF $(DEPDIR)/ieee8023_frame.Tpo -c -o ieee8023_frame.obj `if test -f 'll_library/ieee8023_frame.c'; then $(CYGPATH_W) 'll_library/ieee8023_frame.c'; else $(CYGPATH_W) '$(srcdir)/ll_library/ieee8023_frame.c'; fi`
+	$(am__mv) $(DEPDIR)/ieee8023_frame.Tpo $(DEPDIR)/ieee8023_frame.Po
+#	source='ll_library/ieee8023_frame.c' object='ieee8023_frame.obj' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
-#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ll_frame.obj `if test -f 'll_library/ll_frame.c'; then $(CYGPATH_W) 'll_library/ll_frame.c'; else $(CYGPATH_W) '$(srcdir)/ll_library/ll_frame.c'; fi`
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ieee8023_frame.obj `if test -f 'll_library/ieee8023_frame.c'; then $(CYGPATH_W) 'll_library/ieee8023_frame.c'; else $(CYGPATH_W) '$(srcdir)/ll_library/ieee8023_frame.c'; fi`
 
 ll_socket.o: ll_library/ll_socket.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ll_socket.o -MD -MP -MF $(DEPDIR)/ll_socket.Tpo -c -o ll_socket.o `test -f 'll_library/ll_socket.c' || echo '$(srcdir)/'`ll_library/ll_socket.c
