@@ -3,4 +3,4 @@ CFLAGS = --pedantic -std=gnu99 -Wall -O2
 LDFLAGS = -lev
 # binaries to be produced
 bin_PROGRAMS = linklayertool
-linklayertool_SOURCES = configuration.c core/gn_statemachine.c ll_library/ieee8023_frame.c ll_library/ll_socket.c main.c
+linklayertool_SOURCES = configuration.c core/gn_statemachine.c ll_library/ieee80211_frame.c ll_library/ieee8023_frame.c ll_library/ll_frame.c ll_library/ll_socket.c main.c

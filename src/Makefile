@@ -63,7 +63,8 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_linklayertool_OBJECTS = configuration.$(OBJEXT) \
-	gn_statemachine.$(OBJEXT) ieee8023_frame.$(OBJEXT) \
+	gn_statemachine.$(OBJEXT) ieee80211_frame.$(OBJEXT) \
+	ieee8023_frame.$(OBJEXT) ll_frame.$(OBJEXT) \
 	ll_socket.$(OBJEXT) main.$(OBJEXT)
 linklayertool_OBJECTS = $(am_linklayertool_OBJECTS)
 linklayertool_LDADD = $(LDADD)
@@ -180,7 +181,7 @@ target_alias =
 top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
-linklayertool_SOURCES = configuration.c core/gn_statemachine.c ll_library/ieee8023_frame.c ll_library/ll_socket.c main.c
+linklayertool_SOURCES = configuration.c core/gn_statemachine.c ll_library/ieee80211_frame.c ll_library/ieee8023_frame.c ll_library/ll_frame.c ll_library/ll_socket.c main.c
 all: all-am
 
 .SUFFIXES:
@@ -267,7 +268,9 @@ distclean-compile:
 
 include ./$(DEPDIR)/configuration.Po
 include ./$(DEPDIR)/gn_statemachine.Po
+include ./$(DEPDIR)/ieee80211_frame.Po
 include ./$(DEPDIR)/ieee8023_frame.Po
+include ./$(DEPDIR)/ll_frame.Po
 include ./$(DEPDIR)/ll_socket.Po
 include ./$(DEPDIR)/main.Po
 
@@ -299,6 +302,20 @@ gn_statemachine.obj: core/gn_statemachine.c
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gn_statemachine.obj `if test -f 'core/gn_statemachine.c'; then $(CYGPATH_W) 'core/gn_statemachine.c'; else $(CYGPATH_W) '$(srcdir)/core/gn_statemachine.c'; fi`
 
+ieee80211_frame.o: ll_library/ieee80211_frame.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ieee80211_frame.o -MD -MP -MF $(DEPDIR)/ieee80211_frame.Tpo -c -o ieee80211_frame.o `test -f 'll_library/ieee80211_frame.c' || echo '$(srcdir)/'`ll_library/ieee80211_frame.c
+	$(am__mv) $(DEPDIR)/ieee80211_frame.Tpo $(DEPDIR)/ieee80211_frame.Po
+#	source='ll_library/ieee80211_frame.c' object='ieee80211_frame.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ieee80211_frame.o `test -f 'll_library/ieee80211_frame.c' || echo '$(srcdir)/'`ll_library/ieee80211_frame.c
+
+ieee80211_frame.obj: ll_library/ieee80211_frame.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ieee80211_frame.obj -MD -MP -MF $(DEPDIR)/ieee80211_frame.Tpo -c -o ieee80211_frame.obj `if test -f 'll_library/ieee80211_frame.c'; then $(CYGPATH_W) 'll_library/ieee80211_frame.c'; else $(CYGPATH_W) '$(srcdir)/ll_library/ieee80211_frame.c'; fi`
+	$(am__mv) $(DEPDIR)/ieee80211_frame.Tpo $(DEPDIR)/ieee80211_frame.Po
+#	source='ll_library/ieee80211_frame.c' object='ieee80211_frame.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ieee80211_frame.obj `if test -f 'll_library/ieee80211_frame.c'; then $(CYGPATH_W) 'll_library/ieee80211_frame.c'; else $(CYGPATH_W) '$(srcdir)/ll_library/ieee80211_frame.c'; fi`
+
 ieee8023_frame.o: ll_library/ieee8023_frame.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ieee8023_frame.o -MD -MP -MF $(DEPDIR)/ieee8023_frame.Tpo -c -o ieee8023_frame.o `test -f 'll_library/ieee8023_frame.c' || echo '$(srcdir)/'`ll_library/ieee8023_frame.c
 	$(am__mv) $(DEPDIR)/ieee8023_frame.Tpo $(DEPDIR)/ieee8023_frame.Po
@@ -312,6 +329,20 @@ ieee8023_frame.obj: ll_library/ieee8023_frame.c
 #	source='ll_library/ieee8023_frame.c' object='ieee8023_frame.obj' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ieee8023_frame.obj `if test -f 'll_library/ieee8023_frame.c'; then $(CYGPATH_W) 'll_library/ieee8023_frame.c'; else $(CYGPATH_W) '$(srcdir)/ll_library/ieee8023_frame.c'; fi`
+
+ll_frame.o: ll_library/ll_frame.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ll_frame.o -MD -MP -MF $(DEPDIR)/ll_frame.Tpo -c -o ll_frame.o `test -f 'll_library/ll_frame.c' || echo '$(srcdir)/'`ll_library/ll_frame.c
+	$(am__mv) $(DEPDIR)/ll_frame.Tpo $(DEPDIR)/ll_frame.Po
+#	source='ll_library/ll_frame.c' object='ll_frame.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ll_frame.o `test -f 'll_library/ll_frame.c' || echo '$(srcdir)/'`ll_library/ll_frame.c
+
+ll_frame.obj: ll_library/ll_frame.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ll_frame.obj -MD -MP -MF $(DEPDIR)/ll_frame.Tpo -c -o ll_frame.obj `if test -f 'll_library/ll_frame.c'; then $(CYGPATH_W) 'll_library/ll_frame.c'; else $(CYGPATH_W) '$(srcdir)/ll_library/ll_frame.c'; fi`
+	$(am__mv) $(DEPDIR)/ll_frame.Tpo $(DEPDIR)/ll_frame.Po
+#	source='ll_library/ll_frame.c' object='ll_frame.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ll_frame.obj `if test -f 'll_library/ll_frame.c'; then $(CYGPATH_W) 'll_library/ll_frame.c'; else $(CYGPATH_W) '$(srcdir)/ll_library/ll_frame.c'; fi`
 
 ll_socket.o: ll_library/ll_socket.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ll_socket.o -MD -MP -MF $(DEPDIR)/ll_socket.Tpo -c -o ll_socket.o `test -f 'll_library/ll_socket.c' || echo '$(srcdir)/'`ll_library/ll_socket.c
