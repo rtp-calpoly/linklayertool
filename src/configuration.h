@@ -42,11 +42,15 @@ bool __verbose;
 
 /***************************************************************** DATA TYPES */
 
+#define RAW_FRAME				0	/*!< RAW frame is to be read. */
+#define IEEE_8023_FRAME 		1	/*!< IEEE 802.3 frame is to be read. */
+#define IEEE_80211_FRAME		2	/*!< IEEE 802.11 frame is to be read. */
+
 #define LEN__LL_IF_NAME_BUFFER ( IF_NAMESIZE + 1 )	/*!< if_name buffer size */
 
 /*!
-	\struct configuration_t
-	\brief Runtime configuration of the application.
+ * \struct configuration_t
+ * \brief Runtime configuration of the application.
  */
 typedef struct configuration
 {
@@ -59,46 +63,48 @@ typedef struct configuration
 	
 	int tx_delay;							/*!< Delay of test frames (ms).*/
 
+	int frame_type;							/*!< Type of frame to be read. */
+
 } configuration_t;
+
 #define LEN__T_CONFIGURATION sizeof(configuration_t)	/*!< configuration_t */
 
 /****************************************************************** FUNCTIONS */
 
 /*!
-	\brief Creates an structure with the configuration read from the console.
-	\param argc Number of parameters given by the cli.
-	\param argv Array with the parameters from the cli.
-	\return A pointer to the structure that contains the configuration read.
-*/
+ * \brief Creates an structure with the configuration read from the console.
+ * \param argc Number of parameters given by the cli.
+ * \param argv Array with the parameters from the cli.
+ * \return A pointer to the structure that contains the configuration read.
+ */
 configuration_t *create_configuration(int argc, char** argv);
 
 /*!
-	\brief Allocates memory for the a configuration structure. 
-	\return A pointer to the newly allocated block of memory.
-*/
+ * \brief Allocates memory for the a configuration structure.
+ * \return A pointer to the newly allocated block of memory.
+ */
 configuration_t *new_configuration();
 
 /*!
-	\brief Reads the configuration from the command line arguments.
-	\param argc Number of parameters given by the cli.
-	\param argv Array with the parameters from the cli.
-	\param cfg Structure where the configuration is to be stored.
-	\return EX_OK in case the function was correctly executed.
-*/
+ * \brief Reads the configuration from the command line arguments.
+ * \param argc Number of parameters given by the cli.
+ * \param argv Array with the parameters from the cli.
+ * \param cfg Structure where the configuration is to be stored.
+ * \return EX_OK in case the function was correctly executed.
+ */
 int read_configuration(int argc, char** argv, configuration_t* cfg);
 
 /*!
-	\brief Checks the correctness of the configuration read.
-	\param cfg Structure where the configuration is stored.
-	\return EX_OK in case the function was correctly executed.
-*/
+ * \brief Checks the correctness of the configuration read.
+ * \param cfg Structure where the configuration is stored.
+ * \return EX_OK in case the function was correctly executed.
+ */
 int check_configuration(const configuration_t *cfg);
 
 /*!
-	\brief Prints the values configuration structure.
-	\param cfg Structure where the configuration is stored.
-*/
+ * \brief Prints the values configuration structure.
+ * \param cfg Structure where the configuration is stored.
+ */
 void print_configuration(const configuration_t *cfg);
 
 #endif /* CONFIGURATION_H_ */
-

@@ -60,11 +60,13 @@ int read_configuration(int argc, char** argv, configuration_t* cfg)
 		{"rx",  	no_argument,		NULL, 	'r'	},
 		{"lsap", 	required_argument,	NULL, 	'l'	},
 		{"if",		required_argument,	NULL,	'i'	},
+		{"frame", 	required_argument, 	NULL,	'f'	},
 		{0,0,0,0}
 	};
 	
 	while
-		( ( read = getopt_long(argc, argv, "ehvt:rl:i:", args, &index) ) > -1 )
+		( ( read = getopt_long(argc, argv, "ehvt:rl:i:f:", args, &index) )
+				> -1 )
 	{
 		
 		switch(read)
@@ -95,6 +97,11 @@ int read_configuration(int argc, char** argv, configuration_t* cfg)
 				}
 				
 				strncpy(cfg->if_name, optarg, IF_NAMESIZE);
+				break;
+
+			case 'f':
+
+				cfg->frame_type = atoi(optarg);
 				break;
 
 			case 'e':

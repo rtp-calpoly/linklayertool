@@ -3,6 +3,7 @@ docs/html
 src/netleveltool
 src/*.[oa]
 src/.deps
+src/Makefile*
 /config.h
 /config.log
 /config.status

@@ -27,7 +27,7 @@
 #include "logger.h"
 #include "configuration.h"
 #include "ll_library/ll_socket.h"
-#include "ll_library/ll_frame.h"
+#include "ll_library/ieee8023_frame.h"
 
 /**************************************************** Application definitions */
 static const char* __x_app_name = "linklayertool";
@@ -73,7 +73,8 @@ int main(int argc, char **argv)
 	/* 2) Link layer socket is open. */
 	if ( ( ll_socket = open_ll_socket
 						(	cfg->is_transmitter, cfg->tx_delay,
-							cfg->if_name, cfg->lsap	) ) == NULL )
+							cfg->if_name, cfg->lsap,
+							cfg->frame_type	) ) == NULL )
 		{ handle_app_error("Could not open ll_socket.\n"); }
 	
 	#ifdef KERNEL_RING
@@ -93,6 +94,7 @@ int main(int argc, char **argv)
 		log_app_msg("Setting up receiver mode...\n");
 	}
 
+	//exit(EXIT_SUCCESS);
 	start_ll_socket(ll_socket);
 
 	// 4) sockets are closed before exiting application

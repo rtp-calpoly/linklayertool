@@ -82,19 +82,24 @@ unsigned char *new_mac_buffer()
 /* init_ev_io_arg */
 ev_io_arg_t *init_ev_io_arg(ll_socket_t *ll_socket)
 {
-	ev_io_arg_t *buffer = new_ev_io_arg();
+	ev_io_arg_t *a = new_ev_io_arg();
 
-	buffer->ll_sap = ll_socket->ll_sap;
-	buffer->tx_delay = ll_socket->tx_delay;
-	memcpy(buffer->if_mac, ll_socket->if_mac, ETH_ALEN);
+	a->cb_frame_rx = ll_socket->cb_frame_rx;
+	a->cb_frame_tx = ll_socket->cb_frame_tx;
+
+	a->public_arg.ll_sap = ll_socket->ll_sap;
+	a->public_arg.tx_delay = ll_socket->tx_delay;
+	memcpy(a->public_arg.if_mac, ll_socket->if_mac, ETH_ALEN);
 
 	#ifdef KERNEL_RING
-		buffer->rx_ring = ll_socket->rx_ring_buffer;
+		a->public_arg.rx_ring = ll_socket->rx_ring_buffer;
 	#else
-		buffer->rx_frame = ll_socket->rx_frame;
+		a->public_arg.buffer = ll_socket->buffer;
 	#endif
 
-	return(buffer);
+
+
+	return(a);
 }
 
 #ifdef KERNEL_RING
@@ -192,56 +197,6 @@ int get_mac_address
 
 }
 
-/* init_ieee8023_frame */
-ieee8023_frame_t *init_ieee8023_frame
-	(	const int ll_sap,
-		const unsigned char *h_source,
-		const const unsigned char *h_dest	)
-{
-
-	ieee8023_frame_t *buffer = new_ieee8023_frame();
-
-	buffer->frame.header.h_proto = ll_sap;
-	memcpy(buffer->frame.header.h_dest, h_dest, ETH_ALEN);
-	memcpy(buffer->frame.header.h_source, h_source, ETH_ALEN);
-
-	return(buffer);
-
-}
-
-/* __tx_ieee8023_test_frame */
-int __tx_ieee8023_test_frame
-	(const int socket_fd, const int ll_sap, const unsigned char *h_source)
-{
-
-	ieee8023_frame_t *tx_frame
-		= init_ieee8023_frame(ll_sap, h_source, ETH_ADDR_BROADCAST);
-	tx_frame->frame_len = ETH_HLEN + 10;
-
-	if ( print_ieee8023_frame(tx_frame) < 0 )
-	{
-		log_app_msg("Frame formatted incorrectly!\n");
-		return(EX_ERR);
-	}
-
-	int b_written = write(socket_fd, tx_frame, ETH_FRAME_LEN);
-
-	if ( b_written < 0 )
-	{
-		log_sys_error("Frame could not be sent");
-		return(EX_SYS);
-	}
-
-	if ( b_written < ETH_FRAME_LEN )
-	{
-		log_sys_error("Could not transmit all bytes as requested");
-		return(EX_SYS);
-	}
-
-	return(EX_OK);
-
-}
-
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 // LL_SOCKET MANAGEMENT
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -258,7 +213,8 @@ ll_socket_t *new_ll_socket()
 /* init_ll_socket */
 ll_socket_t *init_ll_socket
 	(	const bool is_transmitter, const int tx_delay,
-		const char *ll_if_name, const int ll_sap	)
+		const char *ll_if_name, const int ll_sap,
+		const int frame_type	)
 {
 
 	#ifdef KERNEL_RING
@@ -288,9 +244,12 @@ ll_socket_t *init_ll_socket
 		s->rx_socket_fd = rx_socket_fd;
 	#else
 		s->socket_fd = socket_fd;
-		s->rx_frame = new_ieee8023_frame();
+		s->buffer = new_ll_framebuffer();
 	#endif
+
 	s->ll_sap = ll_sap;
+	s->frame_type = frame_type;
+
 	#ifdef KERNEL_RING
 		log_app_msg("Socket created, TX_FD = %d, RX_FD = %d, ll_sap = %d\n",
 						tx_socket_fd, rx_socket_fd, ll_sap);
@@ -336,12 +295,14 @@ ll_socket_t *init_ll_socket
 /* open_ll_socket */
 ll_socket_t *open_ll_socket
 	(	const bool is_transmitter, const int tx_delay,
-		const char* ll_if_name, const int ll_sap	)
+		const char* ll_if_name, const int ll_sap,
+		const int frame_type	)
 {
 
 	// 1) create RAW socket
 	ll_socket_t *ll_socket
-		= init_ll_socket(is_transmitter, tx_delay, ll_if_name, ll_sap);
+		= init_ll_socket
+			(is_transmitter, tx_delay, ll_if_name, ll_sap, frame_type);
 	
 	// 2) initialize rings for frames tx+rx
 	#ifdef KERNEL_RING
@@ -580,26 +541,78 @@ int close_rings(const ll_socket_t *ll_socket)
 int init_events(const bool is_transmitter, ll_socket_t *ll_socket)
 {
 
+	if ( init_events_cb(ll_socket) < 0 )
+	{
+		log_app_msg("Could not properly set callback functions.\n");
+		return(EX_ERR);
+	}
 
 	if ( is_transmitter == true )
 	{
 
+		printf("init_tx_events\n");
 		if ( init_tx_events(ll_socket) < 0 )
 			{ handle_app_error("Could not initialize TX events with libev!"); }
-
 		log_app_msg("Frame reception is disabled.\n");
-		return(EX_OK);
 
 	}
 	else
 	{
 
+		printf("init_rx_events\n");
 		if ( init_rx_events(ll_socket) < 0 )
 			{ handle_app_error("Could not initialize RX events with libev!"); }
-
 		log_app_msg("Frame transmission is disabled.\n");
-		return(EX_OK);
 
+	}
+
+	return(EX_OK);
+
+}
+
+/* init_events_cb */
+int init_events_cb(ll_socket_t *ll_socket)
+{
+
+	ev_cb_t rx_cb = NULL;
+	ev_cb_t tx_cb = NULL;
+
+	switch(ll_socket->frame_type)
+	{
+		case TYPE_BUFFER:
+
+			log_app_msg("Buffer frame type not supported yet.\n");
+			return(EX_UNSUPPORTED);
+
+		case TYPE_IEEE_8023:
+
+			rx_cb = (ev_cb_t)&ieee8023_frame_rx_cb;
+			tx_cb = (ev_cb_t)&ieee8023_frame_tx_cb;
+			break;
+
+		case TYPE_IEEE_80211:
+
+			//rx_cb = &ieee80211_frame_rx_cb;
+			//tx_cb = &ieee80211_frame_rx_cb;
+			break;
+
+		default:
+
+			log_app_msg("Unsupported frame_type = %d\n", ll_socket->frame_type);
+			return(EX_UNSUPPORTED);
+
+	}
+
+	// Set callback functions...
+	if ( set_cb_frame_rx(ll_socket, rx_cb) < 0 )
+	{
+		log_app_msg("Could not set frame rx callback.\n");
+		return(EX_ERR);
+	}
+	if ( set_cb_frame_tx(ll_socket, tx_cb) < 0 )
+	{
+		log_app_msg("Could not set frame tx callback.\n");
+		return(EX_ERR);
 	}
 
 	return(EX_OK);
@@ -640,10 +653,10 @@ int init_tx_events(ll_socket_t *ll_socket)
 	ev_io_arg_t *arg = init_ev_io_arg(ll_socket);
 	ll_socket->tx_watcher = &arg->watcher;
 
-	printf(">2 ll_sap = %d, h_dest = ", arg->ll_sap);
+	printf(">2 ll_sap = %d, h_dest = ", arg->public_arg.ll_sap);
 		print_eth_address(ETH_ADDR_BROADCAST);
 		printf(", h_source = ");
-		print_eth_address(arg->if_mac);
+		print_eth_address(arg->public_arg.if_mac);
 		printf("\n");
 
 #ifdef KERNEL_RING
@@ -683,20 +696,11 @@ void cb_process_frame_rx
 		return;
 	}
 
-	log_app_msg(">>>>> Event FRAME_RX !!!\n");
 	ev_io_arg_t *arg = (ev_io_arg_t *)watcher;
+	public_ev_arg_t *public_arg = &arg->public_arg;
+	public_arg->socket_fd = watcher->fd;
 
-#ifdef KERNEL_RING
-	if ( read_ieee8023_frame(arg->rx_ring, arg->rx_frame) < 0 )
-#else
-	if ( read_ieee8023_frame(watcher->fd, arg->rx_frame) < 0 )
-#endif
-	{
-		log_app_msg("Could not read frame.");
-		return;
-	}
-
-	print_ieee8023_frame(arg->rx_frame);
+	arg->cb_frame_rx(public_arg);
 
 }
 
@@ -712,23 +716,36 @@ void cb_process_frame_tx
 	}
 
 	ev_io_arg_t *arg = (ev_io_arg_t *)watcher;
+	public_ev_arg_t *public_arg = &arg->public_arg;
+	public_arg->socket_fd = watcher->fd;
 
-#ifdef KERNEL_RING
-	// TODO
-#else
-	// TODO create argument for passing it to the tx event.
-	if ( __tx_ieee8023_test_frame(watcher->fd, arg->ll_sap, arg->if_mac) < 0 )
-#endif
-	{
-		log_app_msg("Could not transmit test frame.");
-		return;
-	}
+	arg->cb_frame_tx(public_arg);
 
-	if ( usleep(arg->tx_delay) < 0 )
-	{
-		log_app_msg("Could not usleep.");
-		return;
-	}
+}
+
+/* set_cb_frame_rx */
+int set_cb_frame_rx(ll_socket_t *ll_socket, ev_cb_t cb_frame_rx)
+{
+
+	if ( ll_socket == NULL )
+		{ return(EX_NULL_PARAM); }
+
+	ll_socket->cb_frame_rx = cb_frame_rx;
+
+	return(EX_OK);
+
+}
+
+/* set_cb_frame_tx */
+int set_cb_frame_tx(ll_socket_t *ll_socket, ev_cb_t cb_frame_tx)
+{
+
+	if ( ll_socket == NULL )
+		{ return(EX_NULL_PARAM); }
+
+	ll_socket->cb_frame_tx = cb_frame_tx;
+
+	return(EX_OK);
 
 }
 

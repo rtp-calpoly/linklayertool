@@ -23,9 +23,10 @@
 #ifndef LL_SOCKET_H_
 #define LL_SOCKET_H_
 
-#include "ieee8023_frame.h"
 #include "execution_codes.h"
 #include "logger.h"
+#include "ll_library/ll_frame.h"
+#include "ll_library/ieee8023_frame.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -86,10 +87,13 @@ typedef struct ll_socket
 		int socket_fd;					/*!< FD of the socket. */
 		sockaddr_ll_t *addr;			/*!< TX address. */
 
-		ieee8023_frame_t *rx_frame;		/*!< Buffer for frames reception. */
+		ll_frame_t *buffer;				/*!< Buffer for frames reception. */
 
 	#endif
 	
+	ev_cb_t cb_frame_rx;					/*!< Callback frame rx function. */
+	ev_cb_t cb_frame_tx;					/*!< Callback frame tx function. */
+
 	struct ev_loop *loop;					/*!< Default event loop. */
 	struct ev_io *rx_watcher;				/*!< Frame rx watcher. */
 	struct ev_io *tx_watcher;				/*!< Frame tx watcher. */
@@ -102,30 +106,25 @@ typedef struct ll_socket
 	char if_mac[ETH_ALEN];		/*!< MAC address of the link layer level if. */
 
 	int tx_delay;				/*!< Delay (ms) between two test frames. */
+	int frame_type;				/*!< Frame type for post-processing. */
 
 } ll_socket_t;
 
-#define LEN__LL_SOCKET sizeof(ll_socket_t)
-#define LEN__EV_IO sizeof(struct ev_io)
+#define LEN__LL_SOCKET 	sizeof(ll_socket_t)
 
 /*!
-	\struct ev_io_arg_t
-	\brief Structure for passing some arguments to libev's io callback.
+ * \struct ev_io_arg
+ * \brief Structure for passing some arguments to libev's io callback.
  */
 typedef struct ev_io_arg
 {
 
 	struct ev_io watcher;			/*!< Watcher for the event. */
 
-#ifdef KERNEL_RING
-	void *rx_ring;					/*!< Kernel RX_RING. */
-#else
-	ieee8023_frame_t *rx_frame;		/*!< Buffer for frames reception. */
-#endif
+	void (*cb_frame_rx) (public_ev_arg_t *arg);		/*!< Callback frame rx. */
+	void (*cb_frame_tx) (public_ev_arg_t *arg);		/*!< Callback frame tx. */
 
-	int ll_sap;						/*!< Link layer SAP. */
-	int tx_delay;					/*!< Delay (ms) between two test frames. */
-	unsigned char if_mac[ETH_ALEN];	/*!< MAC of the link layer interface. */
+	public_ev_arg_t public_arg;		/*!< Data for external callbacks. */
 
 } ev_io_arg_t;
 
@@ -220,31 +219,6 @@ int if_name_2_if_index(const int socket_fd, const char *if_name);
 int get_mac_address
 	(const int socket_fd, const char *if_name, unsigned char *mac);
 
-/*!
- * 	\brief Initializes an ieee8023_frame structure with the information given
- * 			by the current ll_socket structure.
- * 	\param ll_sap Link layer Service Access Point.
- * 	\param h_source Pointer to the MAC source address.
- * 	\param h_dest Pointer to the buffer that holds the MAC destination.
- * 	\return A pointer to the initialized frame.
- */
-ieee8023_frame_t *init_ieee8023_frame
-	(	const int ll_sap,
-		const unsigned char *h_source,
-		const const unsigned char *h_dest	);
-
-/*!
-	\brief Writes to a socket an IEEE 802.3 frame, filled up with null data.
-	\param socket_fd The socket where to write the frame.
-	\return EX_OK if everything was correct; othewise < 0.
- */
-#ifdef KERNEL_RING
-	// TODO int __tx_ieee8023_test_frame(const void *tx_ring);
-#else
-	int __tx_ieee8023_test_frame
-		(const int socket_fd, const int ll_sap, const unsigned char *h_source);
-#endif
-
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 // LL_SOCKET MANAGEMENT
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -269,7 +243,8 @@ ll_socket_t *new_ll_socket();
 */
 ll_socket_t *init_ll_socket
 	(	const bool is_transmitter, const int tx_delay,
-		const char *ll_if_name, const int ll_sap	);
+		const char *ll_if_name, const int ll_sap,
+		const int frame_type	);
 
 /*!
 	\brief Opens a new socket without binding it.
@@ -278,11 +253,13 @@ ll_socket_t *init_ll_socket
 	\param tx_delay Delay (in ms) after each test frame sent to the channel.
 	\param ll_if_name Name of the link layer level interface.
 	\param ll_sap Link layer service access point.
+	\param frame_type Selects the type of frame to be managed.
 	\return Socket information structure or NULL if a problem occurred.
 */
 ll_socket_t *open_ll_socket
 	(	const bool is_transmitter, const int tx_delay,
-		const char* ll_if_name, const int ll_sap	);
+		const char* ll_if_name, const int ll_sap,
+		const int frame_type	);
 
 /*!
 	\brief Creates and binds a new socket to the given SAP of the link layer.
@@ -364,6 +341,8 @@ int close_rings(const ll_socket_t *ll_socket);
 */
 int init_events(const bool is_transmitter, ll_socket_t *ll_socket);
 
+int init_events_cb(ll_socket_t *ll_socket);
+
 int init_rx_events(ll_socket_t *ll_socket);
 int init_tx_events(ll_socket_t *ll_socket);
 
@@ -384,10 +363,20 @@ void cb_process_frame_rx
 #define WAIT_AFTER_TEST_TX 1000000 	/*!< ms after a successfull test tx. */
 
 /*!
-	\brief Callback function for frames transmission, <libev>.
-*/
+ * \brief Callback function for frames transmission, <libev>.
+ */
 void cb_process_frame_tx
 	(struct ev_loop *loop, struct ev_io *watcher, int revents);
+
+/*!
+ * \brief Sets the function to be called whenever a frame is received.
+ */
+int set_cb_frame_rx(ll_socket_t *ll_socket, ev_cb_t cb_frame_rx);
+
+/*!
+ * \brief Sets the function to be called whenever a frame is to be transmitted.
+ */
+int set_cb_frame_tx(ll_socket_t *ll_socket, ev_cb_t cb_frame_tx);
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 // DATA TX/RX INTERFACE

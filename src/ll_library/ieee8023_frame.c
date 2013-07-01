@@ -1,5 +1,5 @@
 /*
- * @file ll_frame.c
+ * @file ieee8023_frame.c
  * @author Ricardo Tubío (rtpardavila[at]gmail.com)
  * @version 0.1
  *
@@ -22,17 +22,13 @@
  
  #include "ieee8023_frame.h"
 
-/*!< Ethernet broadcast address. */
-const unsigned char ETH_ADDR_BROADCAST[ETH_ALEN]
-                                    = { 0xFF, 0xFF, 0XFF, 0xFF, 0xFF, 0xFF };
-
 /* new_ethhdr */
 struct ethhdr *new_ethhdr()
 {
 
 	struct ethhdr *buffer = NULL;
-	buffer = (struct ethhdr *)malloc(ETH_FRAME_LEN);
-	memset(buffer, 0, ETH_FRAME_LEN);
+	buffer = (struct ethhdr *)malloc(ETH_HLEN);
+	memset(buffer, 0, ETH_HLEN);
 	return(buffer);
 
 }
@@ -42,20 +38,34 @@ ieee8023_frame_t *new_ieee8023_frame()
 {
 
 	ieee8023_frame_t *buffer = NULL;
-	buffer = (ieee8023_frame_t *)malloc(ETH_FRAME_LEN);
-	memset(buffer, 0, ETH_FRAME_LEN);
-	buffer->frame_len = ETH_FRAME_LEN;
-
-	if ( gettimeofday(&buffer->timestamp, NULL) < 0 )
-		{ log_sys_error("Cannot get timestamp"); }
-
+	buffer = (ieee8023_frame_t *)malloc(LEN__IEEE8023_FRAME);
+	memset(buffer, 0, LEN__IEEE8023_FRAME);
 	return(buffer);
 
 }
 
-/* read_ieee8023_frame */
+/* init_ieee8023_frame */
+ieee8023_frame_t *init_ieee8023_frame
+	(	const int ll_sap,
+		const unsigned char *h_source, const unsigned char *h_dest	)
+{
+
+	ieee8023_frame_t *f = new_ieee8023_frame();
+
+	if ( set_ll_frame(&f->info, TYPE_IEEE_8023, ETH_FRAME_LEN) < 0 )
+		{ log_app_msg("Could not set info adequately!\n"); }
+
+	f->buffer.header.h_proto = ll_sap;
+	memcpy(f->buffer.header.h_dest, h_dest, ETH_ALEN);
+	memcpy(f->buffer.header.h_source, h_source, ETH_ALEN);
+
+	return(f);
+
+}
+
 #ifdef KERNEL_RING
 
+/* read_ieee8023_frame */
 int read_ieee8023_frame(const void *rx_ring, ieee8023_frame_t *rx_frame)
 {
 		//struct tpacket_hdr *header = NULL;
@@ -68,91 +78,136 @@ int read_ieee8023_frame(const void *rx_ring, ieee8023_frame_t *rx_frame)
 
 #else
 
-int read_ieee8023_frame(const int socket_fd, ieee8023_frame_t *rx_frame)
+/* ieee8023_frame_rx_cb */
+void ieee8023_frame_rx_cb(const public_ev_arg_t *arg)
 {
 
-	int b_read = read(socket_fd, (void *)&rx_frame->frame, ETH_FRAME_LEN);
+	ieee8023_frame_t *f = (ieee8023_frame_t *)arg->buffer;
+
+	if ( read_ieee8023_frame(arg->socket_fd, f) < 0 )
+	{
+		log_app_msg("Could not read IEEE 802.3 frame.\n");
+		return;
+	}
+
+	if ( print_ieee8023_frame(f) < 0 )
+	{
+		log_app_msg("Could not print IEEE 802.3 frame.\n");
+		return;
+	}
+
+}
+
+/* read_ieee8023_frame */
+int read_ieee8023_frame(const int socket_fd, ieee8023_frame_t *frame)
+{
+
+	int b_read = read(socket_fd, &frame->buffer, ETH_FRAME_LEN);
 
 	if ( b_read < 0 )
 	{
 		log_sys_error("Could not read socket");
 		return(EX_ERR);
 	}
-	if ( b_read < ETH_ZLEN )
+
+	if ( b_read < frame->info.frame_len )
 	{
-		log_app_msg("Read %d bytes < IEEE 802.3 min %d\n", b_read, ETH_ZLEN);
-		return(EX_OK);
+		log_app_msg("Read %d bytes, but %d bytes were requested.\n"
+						, b_read, ETH_FRAME_LEN);
 	}
 
-	rx_frame->frame_len = b_read;
+	if ( set_ll_frame(&frame->info, TYPE_IEEE_8023, b_read) < 0 )
+	{
+		log_app_msg("Error setting ll_frame's info.\n");
+	}
+
 	return(EX_OK);
 
 }
 
 #endif
 
-/* print_ieee8023_frame */
-int print_ieee8023_frame(const ieee8023_frame_t *frame)
+/* ieee8023_frame_tx_cb */
+void ieee8023_frame_tx_cb(const public_ev_arg_t *arg)
 {
 
-	log_app_msg(">>>>> IEEE 802.3 frame:\n");
-	log_app_msg("\t* timestamp = %lu\n", get_timestamp_usecs(frame));
-	log_app_msg("\t* header->dst = ");
-		print_eth_address(frame->frame.header.h_dest);
-		log_app_msg("\n");
-	log_app_msg("\t* header->src = ");
-		print_eth_address(frame->frame.header.h_source);
-		log_app_msg("\n");
-	log_app_msg("\t* header->sap = %02X\n", frame->frame.header.h_proto);
-	log_app_msg("\t* header->data[%d] = ", frame->frame_len - ETH_HLEN);
-		if ( print_eth_data(frame) < 0 )
-			{ return(EX_ERR); }
-		log_app_msg("\n");
+	ieee8023_frame_t *f = (ieee8023_frame_t *)arg->buffer;
 
-	return(EX_OK);
-
-}
-
-/* print_eth_address */
-void print_eth_address(const unsigned char *eth_address)
-{
-
-	printf("%02X:%02X:%02X:%02X:%02X:%02X",
-  			(unsigned char) eth_address[0],
-  			(unsigned char) eth_address[1],
-  			(unsigned char) eth_address[2],
-  			(unsigned char) eth_address[3],
-  			(unsigned char) eth_address[4],
-  			(unsigned char) eth_address[5]);
-
-}
-
-/* print_eth_data */
-int print_eth_data(const ieee8023_frame_t *frame)
-{
-
-	int data_len = frame->frame_len - ETH_HLEN;
-	int last_byte = data_len - 1;
-
-	if ( data_len < 0 )
-		{ return(EX_WRONG_PARAM); }
-
-	for ( int i = 0; i < data_len; i++ )
+	if ( __tx_ieee8023_test_frame
+				(arg->socket_fd, arg->ll_sap, arg->if_mac) < 0 )
 	{
-		if ( ( i % BYTES_PER_LINE ) == 0 )
-			{ log_app_msg("\n\t\t\t"); }
+		log_app_msg("Could not transmit IEEE 802.3 frame.\n");
+		return;
+	}
 
-		log_app_msg("%02X", 0xFF & (unsigned int)frame->frame.data[i]);
-		if ( i < last_byte ) { log_app_msg(":"); }
+	if ( print_ieee8023_frame(f) < 0 )
+	{
+		log_app_msg("Could not print IEEE 802.3 frame.\n");
+		return;
+	}
+
+	if ( usleep(arg->tx_delay) < 0 )
+	{
+		log_app_msg("Could not usleep.");
+		return;
+	}
+
+}
+
+/* __tx_ieee8023_test_frame */
+int __tx_ieee8023_test_frame
+	(const int socket_fd, const int ll_sap, const unsigned char *h_source)
+{
+
+	ieee8023_frame_t *tx_frame
+		= init_ieee8023_frame(ll_sap, h_source, ETH_ADDR_BROADCAST);
+	tx_frame->info.frame_len = ETH_HLEN + 10;
+
+	if ( print_ieee8023_frame(tx_frame) < 0 )
+	{
+		log_app_msg("Frame formatted incorrectly!\n");
+		return(EX_ERR);
+	}
+
+	int b_written = write(socket_fd, tx_frame, ETH_FRAME_LEN);
+
+	if ( b_written < 0 )
+	{
+		log_sys_error("Frame could not be sent");
+		return(EX_SYS);
+	}
+
+	if ( b_written < ETH_FRAME_LEN )
+	{
+		log_sys_error("Could not transmit all bytes as requested");
+		return(EX_SYS);
 	}
 
 	return(EX_OK);
 
 }
 
-/* get_timestamp_usecs */
-uint64_t get_timestamp_usecs(const ieee8023_frame_t *frame)
+/* print_ieee8023_frame */
+int print_ieee8023_frame(const ieee8023_frame_t *frame)
 {
-    return frame->timestamp.tv_sec * (uint64_t) 1000000
-    				+ frame->timestamp.tv_usec;
+
+	if ( print_ll_frame(&frame->info) < 0 ) { return(EX_ERR); }
+
+	log_app_msg("\t* header->dst = ");
+		print_eth_address(frame->buffer.header.h_dest);
+		log_app_msg("\n");
+	log_app_msg("\t* header->src = ");
+		print_eth_address(frame->buffer.header.h_source);
+		log_app_msg("\n");
+	log_app_msg("\t* header->sap = %02X\n", frame->buffer.header.h_proto);
+
+	int data_len = frame->info.frame_len - ETH_HLEN;
+	log_app_msg("\t* data[%d] = ", data_len);
+
+	if ( print_hex_data((char *)&frame->buffer.data, data_len) < 0 )
+		{ log_app_msg("\n"); return(EX_ERR); }
+	log_app_msg("\n");
+
+	return(EX_OK);
+
 }
