@@ -99,12 +99,12 @@ mansdir = $(mandir)/mans
 NROFF = nroff
 MANS = $(dist_man_MANS)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run aclocal-1.11
+ACLOCAL = ${SHELL} /home/siscoga/linklayertool/missing --run aclocal-1.11
 AMTAR = $${TAR-tar}
-AUTOCONF = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run autoconf
-AUTOHEADER = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run autoheader
-AUTOMAKE = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run automake-1.11
-AWK = gawk
+AUTOCONF = ${SHELL} /home/siscoga/linklayertool/missing --run autoconf
+AUTOHEADER = ${SHELL} /home/siscoga/linklayertool/missing --run autoheader
+AUTOMAKE = ${SHELL} /home/siscoga/linklayertool/missing --run automake-1.11
+AWK = mawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2
@@ -116,7 +116,7 @@ CXXFLAGS = -g -O2
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
-DOXYGEN = doxygen
+DOXYGEN = 
 ECHO_C = 
 ECHO_N = -n
 ECHO_T = 
@@ -133,7 +133,7 @@ LIBOBJS =
 LIBS = -lev 
 LN_S = ln -s
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run makeinfo
+MAKEINFO = ${SHELL} /home/siscoga/linklayertool/missing --run makeinfo
 MKDIR_P = /bin/mkdir -p
 OBJEXT = o
 PACKAGE = linklayertool
@@ -149,10 +149,10 @@ SET_MAKE =
 SHELL = /bin/bash
 STRIP = 
 VERSION = 0.1
-abs_builddir = /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/docs
-abs_srcdir = /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/docs
-abs_top_builddir = /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool
-abs_top_srcdir = /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool
+abs_builddir = /home/siscoga/linklayertool/docs
+abs_srcdir = /home/siscoga/linklayertool/docs
+abs_top_builddir = /home/siscoga/linklayertool
+abs_top_srcdir = /home/siscoga/linklayertool
 ac_ct_CC = gcc
 ac_ct_CXX = g++
 am__include = include
@@ -172,7 +172,7 @@ host_alias =
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/install-sh
+install_sh = ${SHELL} /home/siscoga/linklayertool/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -192,9 +192,9 @@ target_alias =
 top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
-directory = $(top_srcdir)/docs/man/man3/
-dist_man_MANS = $(directory)/man_page_1.3 $(directory)/man_page_2.3 $(directory)/man_page_1.3: doxyfile.stamp $(directory)/man_page_2.3: doxyfile.stamp
-CLEANFILES = doxyfile.stamp
+#directory = $(top_srcdir)/docs/man/man3/
+#dist_man_MANS = $(directory)/man_page_1.3 $(directory)/man_page_2.3 $(directory)/man_page_1.3: doxyfile.stamp $(directory)/man_page_2.3: doxyfile.stamp
+#CLEANFILES = doxyfile.stamp
 all: all-am
 
 .SUFFIXES:
@@ -228,8 +228,8 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
-Doxyfile: $(top_builddir)/config.status $(srcdir)/Doxyfile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+#Doxyfile: $(top_builddir)/config.status $(srcdir)/Doxyfile.in
+#	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 install-man3: $(dist_man_MANS)
 	@$(NORMAL_INSTALL)
 	@list1=''; \
@@ -368,7 +368,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-#all-local:
+all-local:
 all-am: Makefile $(MANS) all-local
 installdirs:
 	for dir in "$(DESTDIR)$(man3dir)" "$(DESTDIR)$(mansdir)"; do \
@@ -405,7 +405,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-#clean-local:
+clean-local:
 clean: clean-am
 
 clean-am: clean-generic clean-local mostlyclean-am
@@ -489,13 +489,13 @@ uninstall-man: uninstall-man3 uninstall-mans
 	uninstall-man uninstall-man3 uninstall-mans
 
 
-doxyfile.stamp:
-   $(DOXYGEN) Doxyfile
-   echo Timestamp > doxyfile.stamp
+#doxyfile.stamp:
+#   $(DOXYGEN) Doxyfile
+#   echo Timestamp > doxyfile.stamp
 
-all-local: doxyfile.stamp
-clean-local:
-   rm -rf $(top_srcdir)/docs/man
+#all-local: doxyfile.stamp
+#clean-local:
+#   rm -rf $(top_srcdir)/docs/man
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
