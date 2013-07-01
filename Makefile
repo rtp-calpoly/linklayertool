@@ -125,21 +125,12 @@ distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
-<<<<<<< HEAD
-ACLOCAL = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run aclocal-1.11
+ACLOCAL = ${SHELL} /home/siscoga/linklayertool/missing --run aclocal-1.11
 AMTAR = $${TAR-tar}
-AUTOCONF = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run autoconf
-AUTOHEADER = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run autoheader
-AUTOMAKE = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run automake-1.11
-=======
-MISSING = ${top_srcdir}/missing
-ACLOCAL = ${SHELL} ${MISSING} --run aclocal-1.11
-AMTAR = $${TAR-tar}
-AUTOCONF = ${SHELL} ${MISSING} --run autoconf
-AUTOHEADER = ${SHELL} ${MISSING} --run autoheader
-AUTOMAKE = ${SHELL} ${MISSING} --run automake-1.11
->>>>>>> afbe01d4f594e587d48a12686a313dd075eec0f7
-AWK = gawk
+AUTOCONF = ${SHELL} /home/siscoga/linklayertool/missing --run autoconf
+AUTOHEADER = ${SHELL} /home/siscoga/linklayertool/missing --run autoheader
+AUTOMAKE = ${SHELL} /home/siscoga/linklayertool/missing --run automake-1.11
+AWK = mawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2
@@ -151,7 +142,7 @@ CXXFLAGS = -g -O2
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
-DOXYGEN = doxygen
+DOXYGEN = 
 ECHO_C = 
 ECHO_N = -n
 ECHO_T = 
@@ -165,14 +156,10 @@ INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
 LDFLAGS = 
 LIBOBJS = 
-LIBS = -levent -lev 
+LIBS = -lev 
 LN_S = ln -s
 LTLIBOBJS = 
-<<<<<<< HEAD
-MAKEINFO = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/missing --run makeinfo
-=======
-MAKEINFO = ${SHELL} ${MISSING} --run makeinfo
->>>>>>> afbe01d4f594e587d48a12686a313dd075eec0f7
+MAKEINFO = ${SHELL} /home/siscoga/linklayertool/missing --run makeinfo
 MKDIR_P = /bin/mkdir -p
 OBJEXT = o
 PACKAGE = linklayertool
@@ -188,10 +175,10 @@ SET_MAKE =
 SHELL = /bin/bash
 STRIP = 
 VERSION = 0.1
-abs_builddir = /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool
-abs_srcdir = /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool
-abs_top_builddir = /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool
-abs_top_srcdir = /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool
+abs_builddir = /home/siscoga/linklayertool
+abs_srcdir = /home/siscoga/linklayertool
+abs_top_builddir = /home/siscoga/linklayertool
+abs_top_srcdir = /home/siscoga/linklayertool
 ac_ct_CC = gcc
 ac_ct_CXX = g++
 am__include = include
@@ -211,7 +198,7 @@ host_alias =
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/rtubio/dev/__siscoga_shared/siscoga-workspace/linklayertool/install-sh
+install_sh = ${SHELL} /home/siscoga/linklayertool/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
