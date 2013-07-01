@@ -23,7 +23,7 @@
 #ifndef LL_SOCKET_H_
 #define LL_SOCKET_H_
 
-#include "ll_frame.h"
+#include "ieee8023_frame.h"
 #include "execution_codes.h"
 #include "logger.h"
 
@@ -101,6 +101,8 @@ typedef struct ll_socket
 	int if_index;				/*!< Index of the link layer level if.*/
 	char if_mac[ETH_ALEN];		/*!< MAC address of the link layer level if. */
 
+	int tx_delay;				/*!< Delay (ms) between two test frames. */
+
 } ll_socket_t;
 
 #define LEN__LL_SOCKET sizeof(ll_socket_t)
@@ -117,12 +119,13 @@ typedef struct ev_io_arg
 
 #ifdef KERNEL_RING
 	void *rx_ring;					/*!< Kernel RX_RING. */
+#else
+	ieee8023_frame_t *rx_frame;		/*!< Buffer for frames reception. */
 #endif
 
 	int ll_sap;						/*!< Link layer SAP. */
+	int tx_delay;					/*!< Delay (ms) between two test frames. */
 	unsigned char if_mac[ETH_ALEN];	/*!< MAC of the link layer interface. */
-
-	ieee8023_frame_t *rx_frame;		/*!< Buffer for frames reception. */
 
 } ev_io_arg_t;
 
@@ -174,6 +177,8 @@ unsigned char *new_mac_buffer();
 */
 ev_io_arg_t *init_ev_io_arg(ll_socket_t *ll_socket);
 
+#ifdef KERNEL_RING
+
 /*!
 	\brief Initializes a tpacket structure for the request of a ring to the 
 			kernel, with 1 block of memory containing the requested number 
@@ -182,8 +187,10 @@ ev_io_arg_t *init_ev_io_arg(ll_socket_t *ll_socket);
 	\param no_blocks Number of blocks to be used for this ring.
 	\return The initialized tpacket_req structure.
 */
-tpacket_req_t *init_tpacket_req(	const int frames_per_block,
-									const int no_blocks			);
+tpacket_req_t *init_tpacket_req
+					(const int frames_per_block, const int no_blocks);
+
+#endif
 
 /*!
 	\brief Allocates memory for a socket_addr structure and fills it up with 
@@ -251,8 +258,9 @@ ll_socket_t *new_ll_socket();
 /*!
 	\brief Creates a RAW socket with TX and RX buffers initialized and mmap()ed
 			to the appropriate kernelspace memory.
-	\param bool Flag that indicates whether the socket shall also transmit
-				test frames within its own loop.
+	\param is_transmitter Flag that indicates whether the socket must
+							transmit test frames within its own loop.
+	\param tx_delay Delay (in ms) after each test frame sent to the channel.
 	\param ll_if_name Name of the link layer level interface to be used.
 	\param ll_sap Service access point to be used.
 	\return Structure containing all information necessary for handling this
@@ -260,18 +268,21 @@ ll_socket_t *new_ll_socket();
 			ocurred.
 */
 ll_socket_t *init_ll_socket
-	(const bool is_transmitter, const char *ll_if_name, const int ll_sap);
+	(	const bool is_transmitter, const int tx_delay,
+		const char *ll_if_name, const int ll_sap	);
 
 /*!
 	\brief Opens a new socket without binding it.
-	\param bool Flag that indicates whether the socket shall also transmit
-				test frames within its own loop.
+	\param is_transmitter Flag that indicates whether the socket must
+							transmit test frames within its own loop.
+	\param tx_delay Delay (in ms) after each test frame sent to the channel.
 	\param ll_if_name Name of the link layer level interface.
 	\param ll_sap Link layer service access point.
 	\return Socket information structure or NULL if a problem occurred.
 */
 ll_socket_t *open_ll_socket
-	(const bool is_transmitter, const char* ll_if_name, const int ll_sap);
+	(	const bool is_transmitter, const int tx_delay,
+		const char* ll_if_name, const int ll_sap	);
 
 /*!
 	\brief Creates and binds a new socket to the given SAP of the link layer.

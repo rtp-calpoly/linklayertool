@@ -20,7 +20,7 @@
  * along with linklayertool.  If not, see <http://www.gnu.org/licenses/>.
  */
  
- #include "ll_frame.h"
+ #include "ieee8023_frame.h"
 
 /*!< Ethernet broadcast address. */
 const unsigned char ETH_ADDR_BROADCAST[ETH_ALEN]
@@ -45,6 +45,10 @@ ieee8023_frame_t *new_ieee8023_frame()
 	buffer = (ieee8023_frame_t *)malloc(ETH_FRAME_LEN);
 	memset(buffer, 0, ETH_FRAME_LEN);
 	buffer->frame_len = ETH_FRAME_LEN;
+
+	if ( gettimeofday(&buffer->timestamp, NULL) < 0 )
+		{ log_sys_error("Cannot get timestamp"); }
+
 	return(buffer);
 
 }
@@ -92,6 +96,7 @@ int print_ieee8023_frame(const ieee8023_frame_t *frame)
 {
 
 	log_app_msg(">>>>> IEEE 802.3 frame:\n");
+	log_app_msg("\t* timestamp = %lu\n", get_timestamp_usecs(frame));
 	log_app_msg("\t* header->dst = ");
 		print_eth_address(frame->frame.header.h_dest);
 		log_app_msg("\n");
@@ -143,4 +148,11 @@ int print_eth_data(const ieee8023_frame_t *frame)
 
 	return(EX_OK);
 
+}
+
+/* get_timestamp_usecs */
+uint64_t get_timestamp_usecs(const ieee8023_frame_t *frame)
+{
+    return frame->timestamp.tv_sec * (uint64_t) 1000000
+    				+ frame->timestamp.tv_usec;
 }

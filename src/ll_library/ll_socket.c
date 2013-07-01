@@ -84,19 +84,24 @@ ev_io_arg_t *init_ev_io_arg(ll_socket_t *ll_socket)
 {
 	ev_io_arg_t *buffer = new_ev_io_arg();
 
+	buffer->ll_sap = ll_socket->ll_sap;
+	buffer->tx_delay = ll_socket->tx_delay;
+	memcpy(buffer->if_mac, ll_socket->if_mac, ETH_ALEN);
+
 	#ifdef KERNEL_RING
 		buffer->rx_ring = ll_socket->rx_ring_buffer;
 	#else
 		buffer->rx_frame = ll_socket->rx_frame;
-		buffer->ll_sap = ll_socket->ll_sap;
-		memcpy(buffer->if_mac, ll_socket->if_mac, ETH_ALEN);
 	#endif
 
 	return(buffer);
 }
 
+#ifdef KERNEL_RING
+
 /* init_tpacket_req */
-tpacket_req_t *init_tpacket_req(const int frames_per_block, const int no_blocks)
+tpacket_req_t *init_tpacket_req
+					(const int frames_per_block, const int no_blocks)
 {
 	tpacket_req_t *t = new_tpacket_req();
   	t->tp_block_size = frames_per_block * getpagesize();
@@ -105,6 +110,8 @@ tpacket_req_t *init_tpacket_req(const int frames_per_block, const int no_blocks)
   	t->tp_frame_nr = frames_per_block * no_blocks;
   	return(t); 	
 }
+
+#endif
 
 /* init_sockaddr_ll */
 sockaddr_ll_t *init_sockaddr_ll(const ll_socket_t* ll_socket)
@@ -250,7 +257,8 @@ ll_socket_t *new_ll_socket()
 
 /* init_ll_socket */
 ll_socket_t *init_ll_socket
-	(const bool is_transmitter, const char *ll_if_name, const int ll_sap)
+	(	const bool is_transmitter, const int tx_delay,
+		const char *ll_if_name, const int ll_sap	)
 {
 
 	#ifdef KERNEL_RING
@@ -325,13 +333,15 @@ ll_socket_t *init_ll_socket
 	
 }
 
-/* new_ll_socket */
+/* open_ll_socket */
 ll_socket_t *open_ll_socket
-	(const bool is_transmitter, const char* ll_if_name, const int ll_sap)
+	(	const bool is_transmitter, const int tx_delay,
+		const char* ll_if_name, const int ll_sap	)
 {
 
 	// 1) create RAW socket
-	ll_socket_t *ll_socket = init_ll_socket(is_transmitter, ll_if_name, ll_sap);
+	ll_socket_t *ll_socket
+		= init_ll_socket(is_transmitter, tx_delay, ll_if_name, ll_sap);
 	
 	// 2) initialize rings for frames tx+rx
 	#ifdef KERNEL_RING
@@ -714,7 +724,7 @@ void cb_process_frame_tx
 		return;
 	}
 
-	if ( usleep(WAIT_AFTER_TEST_TX) < 0 )
+	if ( usleep(arg->tx_delay) < 0 )
 	{
 		log_app_msg("Could not usleep.");
 		return;

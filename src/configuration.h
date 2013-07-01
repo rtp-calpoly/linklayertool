@@ -57,6 +57,8 @@ typedef struct configuration
 	int lsap;								/*!< LSAP to be used. */
 	char if_name[LEN__LL_IF_NAME_BUFFER];	/*!< Name of the link interface. */
 	
+	int tx_delay;							/*!< Delay of test frames (ms).*/
+
 } configuration_t;
 #define LEN__T_CONFIGURATION sizeof(configuration_t)	/*!< configuration_t */
 

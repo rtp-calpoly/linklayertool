@@ -30,7 +30,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <inttypes.h>
 #include <linux/if_ether.h>
+#include <sys/time.h>
 
 //#define KERNEL_RING 1
 
@@ -38,7 +40,7 @@
 	#include <linux/if_packet.h>
 #endif
 
-/***************************************************************** DATA TYPES */
+/****************************************************** IEEE 802.3 structures */
 
 /*!< Ethernet broadcast address. */
 extern const unsigned char ETH_ADDR_BROADCAST[ETH_ALEN];
@@ -67,6 +69,7 @@ typedef struct ieee8023_frame
 {
 
 	int frame_len;				/*!< Length of the total bytes read. */
+	struct timeval timestamp;	/*!< Frame creation timestamp (usecs). */
 
 	ieee8023_buffer_t frame;	/*!< Buffer with the frame. */
 
@@ -74,7 +77,7 @@ typedef struct ieee8023_frame
 
 #define LEN__IEEE8023_FRAME sizeof(ieee8023_frame_t)
 
-/****************************************************************** FUNCTIONS */
+/******************************************************* IEEE 802.3 functions */
 
 /*!
 	\brief Allocates memory for an ethhdr structure, including MAX PAYLOAD.
@@ -126,5 +129,12 @@ int print_eth_data(const ieee8023_frame_t *frame);
 	\param eth_address Ethernet address as an array.
  */
 void print_eth_address(const unsigned char *eth_address);
+
+/*!
+ * \brief Gets the timestamp of a given frame.
+ * \param frame ieee8023_frame with the timestamp to be calculated.
+ * \return Long number containing the timestamp of the given frame.
+ */
+uint64_t get_timestamp_usecs(const ieee8023_frame_t *frame);
 
 #endif /* LL_FRAME_H */
