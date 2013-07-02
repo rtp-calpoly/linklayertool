@@ -102,6 +102,7 @@ int read_configuration(int argc, char** argv, configuration_t* cfg)
 			case 'f':
 
 				cfg->frame_type = atoi(optarg);
+				log_app_msg("cfg->frame_type = %d\n", cfg->frame_type);
 				break;
 
 			case 'e':
@@ -160,6 +161,13 @@ int check_configuration(const configuration_t *cfg)
 	if ( strlen(cfg->if_name) <= 0  )
 	{
 		handle_app_error("Link Layer interface name must be provided.\n");
+	}
+
+	if ( cfg->frame_type <= 0  )
+	{
+		log_app_msg("A single type of frame must be selected:\n");
+		log_app_msg("\t* IEEE 802.3 frame = %d\n", IEEE_8023_FRAME);
+		handle_app_error("\t* IEEE 802.11 frame = %d\n", IEEE_80211_FRAME);
 	}
 
 	return(EX_OK);
