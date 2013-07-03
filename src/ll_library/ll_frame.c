@@ -29,6 +29,9 @@ const unsigned char ETH_ADDR_BROADCAST[ETH_ALEN]
 /*!< Ethernet NULL address. */
 const unsigned char ETH_ADDR_NULL[ETH_ALEN]
                                     = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+/*!< Ethernet FAKE address. */
+const unsigned char ETH_ADDR_FAKE[ETH_ALEN]
+                                    = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55 };
 
 /* new_ll_frame */
 ll_frame_t *new_ll_frame()

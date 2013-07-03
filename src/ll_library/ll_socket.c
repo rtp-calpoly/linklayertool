@@ -229,12 +229,12 @@ ll_socket_t *init_ll_socket
 
 	// 1) create RAW socket(s)	
 	#ifdef KERNEL_RING
-		if ( ( tx_socket_fd = socket(PF_PACKET, SOCK_RAW, ll_sap) ) < 0 )
+		if ( ( tx_socket_fd = socket(AF_PACKET, SOCK_RAW, ll_sap) ) < 0 )
 			{ handle_sys_error("Could not open TX socket"); }
-		if ( ( rx_socket_fd = socket(PF_PACKET, SOCK_RAW, ll_sap) ) < 0 )
+		if ( ( rx_socket_fd = socket(AF_PACKET, SOCK_RAW, ll_sap) ) < 0 )
 			{ handle_sys_error("Could not open RX socket"); }
 	#else
-		if ( ( socket_fd = socket(PF_PACKET, SOCK_RAW, ll_sap) ) < 0 )
+		if ( ( socket_fd = socket(AF_PACKET, SOCK_RAW, ll_sap) ) < 0 )
 			{ handle_sys_error("Could not open socket"); }
 	#endif
 	
@@ -275,7 +275,6 @@ ll_socket_t *init_ll_socket
 	{
 		handle_app_error(	"Could not get MAC address, if_name = %s\n"
 							, ll_if_name	);
-
 	}
 
 	log_app_msg("IF: name = %s, index = %d, MAC = ", ll_if_name, ll_if_index);

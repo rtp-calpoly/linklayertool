@@ -26,6 +26,7 @@
 #include "execution_codes.h"
 #include "logger.h"
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,6 +44,8 @@
 extern const unsigned char ETH_ADDR_BROADCAST[ETH_ALEN];
 /*!< Ethernet NULL address. */
 extern const unsigned char ETH_ADDR_NULL[ETH_ALEN];
+/*!< Ethernet FAKE address. */
+extern const unsigned char ETH_ADDR_FAKE[ETH_ALEN];
 
 #define TYPE_BUFFER 		0	/*!< Defines a buffer with unknown data. */
 #define TYPE_IEEE_8023 		1	/*!< Buffer with an IEEE 802.3 frame. */
@@ -86,6 +89,7 @@ typedef struct public_ev_arg
 
 	int ll_sap;						/*!< Link layer SAP. */
 	int tx_delay;					/*!< Delay (ms) between two test frames. */
+	int if_index;					/*!< Index of the interface. */
 	unsigned char if_mac[ETH_ALEN];	/*!< MAC of the link layer interface. */
 
 } public_ev_arg_t;

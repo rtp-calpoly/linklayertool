@@ -132,7 +132,7 @@ void ieee8023_frame_tx_cb(const public_ev_arg_t *arg)
 {
 
 	if ( __tx_ieee8023_test_frame
-				(arg->socket_fd, arg->ll_sap, arg->if_mac) < 0 )
+				(arg->socket_fd, arg->ll_sap, arg->if_index, arg->if_mac) < 0 )
 	{
 		log_app_msg("Could not transmit IEEE 802.3 frame.\n");
 		return;
@@ -149,11 +149,12 @@ void ieee8023_frame_tx_cb(const public_ev_arg_t *arg)
 
 /* __tx_ieee8023_test_frame */
 int __tx_ieee8023_test_frame
-	(const int socket_fd, const int ll_sap, const unsigned char *h_source)
+	(	const int socket_fd, const int ll_sap, const int if_index,
+		const unsigned char *h_source	)
 {
 
 	ieee8023_frame_t *tx_frame
-		= init_ieee8023_frame(ll_sap, h_source, ETH_ADDR_BROADCAST);
+		= init_ieee8023_frame(ll_sap, h_source, ETH_ADDR_FAKE);
 	tx_frame->info.frame_len = ETH_HLEN + 10;
 
 	if ( print_ieee8023_frame(tx_frame) < 0 )
@@ -162,7 +163,18 @@ int __tx_ieee8023_test_frame
 		return(EX_ERR);
 	}
 
-	int b_written = write(socket_fd, tx_frame, ETH_FRAME_LEN);
+	struct sockaddr_ll socket_address;
+	socket_address.sll_ifindex = if_index;
+	/* Address length*/
+	socket_address.sll_halen = ETH_ALEN;
+	/* Destination MAC */
+	memcpy(socket_address.sll_addr, ETH_ADDR_FAKE, ETH_ALEN);
+
+	//int b_written = write(socket_fd, tx_frame, ETH_FRAME_LEN);
+	int b_written = sendto(	socket_fd,
+							&tx_frame->buffer, tx_frame->info.frame_len, 0,
+							(struct sockaddr *)&socket_address,
+							sizeof(struct sockaddr_ll)	);
 
 	if ( b_written < 0 )
 	{

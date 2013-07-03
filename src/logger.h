@@ -38,7 +38,7 @@
            	do { perror(msg); close(fd); return(ex_no); } while (0)
            	
 #define log_sys_error(msg) \
-           	do { perror(msg); } while (0)
+           	do { perror(msg); fprintf(stderr, "err# = %d\n", errno); } while (0)
            	
 #define handle_app_error(...) \
            	do { fprintf(stderr, __VA_ARGS__); exit(EXIT_FAILURE); } while (0)

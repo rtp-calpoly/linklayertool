@@ -27,6 +27,7 @@
 #include "logger.h"
 #include "ll_library/ll_frame.h"
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,7 +35,9 @@
 #include <unistd.h>
 #include <inttypes.h>
 #include <linux/if_ether.h>
+#include <linux/if_packet.h>
 #include <sys/time.h>
+#include <sys/socket.h>
 
 /***************************************************** IEEE 802.11 structures */
 
@@ -170,6 +173,7 @@ void ieee80211_frame_tx_cb(const public_ev_arg_t *arg);
  * \return EX_OK if everything was correct; otherwise < 0.
  */
 int __tx_ieee80211_test_frame
-	(const int socket_fd, const int ll_sap, const unsigned char *h_source);
+	(	const int socket_fd, const int ll_sap, const int if_index,
+		const unsigned char *h_source	);
 
 #endif /* IEEE80211_FRAME_H_ */
