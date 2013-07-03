@@ -104,7 +104,7 @@ int read_ieee8023_frame(const int socket_fd, ieee8023_frame_t *frame)
 
 	int b_read = read(socket_fd, &frame->buffer, ETH_FRAME_LEN);
 
-	if ( b_read < 0 )
+	if ( b_read <= 0 )
 	{
 		log_sys_error("Could not read socket");
 		return(EX_ERR);
@@ -131,8 +131,6 @@ int read_ieee8023_frame(const int socket_fd, ieee8023_frame_t *frame)
 void ieee8023_frame_tx_cb(const public_ev_arg_t *arg)
 {
 
-	ieee8023_frame_t *f = (ieee8023_frame_t *)arg->buffer;
-
 	if ( __tx_ieee8023_test_frame
 				(arg->socket_fd, arg->ll_sap, arg->if_mac) < 0 )
 	{
@@ -140,15 +138,10 @@ void ieee8023_frame_tx_cb(const public_ev_arg_t *arg)
 		return;
 	}
 
-	if ( print_ieee8023_frame(f) < 0 )
-	{
-		log_app_msg("Could not print IEEE 802.3 frame.\n");
-		return;
-	}
-
+	log_app_msg("Sleeping for %d (usecs)...\n", arg->tx_delay);
 	if ( usleep(arg->tx_delay) < 0 )
 	{
-		log_app_msg("Could not usleep.");
+		log_app_msg("Could not sleep for %d.\n", arg->tx_delay);
 		return;
 	}
 

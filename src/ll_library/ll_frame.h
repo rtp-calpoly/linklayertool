@@ -41,6 +41,8 @@
 
 /*!< Ethernet broadcast address. */
 extern const unsigned char ETH_ADDR_BROADCAST[ETH_ALEN];
+/*!< Ethernet NULL address. */
+extern const unsigned char ETH_ADDR_NULL[ETH_ALEN];
 
 #define TYPE_BUFFER 		0	/*!< Defines a buffer with unknown data. */
 #define TYPE_IEEE_8023 		1	/*!< Buffer with an IEEE 802.3 frame. */

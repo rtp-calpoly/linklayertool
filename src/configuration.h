@@ -42,6 +42,10 @@ bool __verbose;
 
 /***************************************************************** DATA TYPES */
 
+#define __USECS_2_MSECS 		1000	/*!< From msecs to usecs. */
+#define __USECS_2_SECS			1000000	/*!< From usecs to secs. */
+#define __MAX_TX_DELAY			1000	/*!< Maximum ammount of msecs. */
+
 #define RAW_FRAME				0	/*!< RAW frame is to be read. */
 #define IEEE_8023_FRAME 		1	/*!< IEEE 802.3 frame is to be read. */
 #define IEEE_80211_FRAME		2	/*!< IEEE 802.11 frame is to be read. */
@@ -99,7 +103,7 @@ int read_configuration(int argc, char** argv, configuration_t* cfg);
  * \param cfg Structure where the configuration is stored.
  * \return EX_OK in case the function was correctly executed.
  */
-int check_configuration(const configuration_t *cfg);
+int check_configuration(configuration_t *cfg);
 
 /*!
  * \brief Prints the values configuration structure.

@@ -81,21 +81,42 @@ int read_ieee80211_frame(const void *rx_ring, ieee80211_frame_t *rx_frame)
 
 #else
 
+/* ieee80211_frame_rx_cb */
+void ieee80211_frame_rx_cb(const public_ev_arg_t *arg)
+{
+
+	ieee80211_frame_t *f = (ieee80211_frame_t *)arg->buffer;
+
+	if ( read_ieee80211_frame(arg->socket_fd, f) < 0 )
+	{
+		log_app_msg("Could not read IEEE 802.11 frame.\n");
+		return;
+	}
+
+	if ( print_ieee80211_frame(f) < 0 )
+	{
+		log_app_msg("Could not print IEEE 802.11 frame.\n");
+		return;
+	}
+
+}
+
 /* read_ieee80211_frame */
 int read_ieee80211_frame(const int socket_fd, ieee80211_frame_t *frame)
 {
 
 	int b_read = read(socket_fd, &frame->buffer, IEEE_80211_FRAME_LEN);
 
-	if ( b_read < 0 )
+	if ( b_read <= 0 )
 	{
 		log_sys_error("Could not read socket");
 		return(EX_ERR);
 	}
+
 	if ( b_read < frame->info.frame_len )
 	{
 		log_app_msg("Read %d bytes, but %d bytes were requested.\n"
-						, b_read, IEEE_80211_FRAME_LEN);
+						, b_read, ETH_FRAME_LEN);
 	}
 
 	if ( set_ll_frame(&frame->info, TYPE_IEEE_80211, b_read) < 0 )
@@ -108,6 +129,63 @@ int read_ieee80211_frame(const int socket_fd, ieee80211_frame_t *frame)
 }
 
 #endif
+
+/* ieee80211_frame_tx_cb */
+void ieee80211_frame_tx_cb(const public_ev_arg_t *arg)
+{
+
+	if ( __tx_ieee80211_test_frame
+				(arg->socket_fd, arg->ll_sap, arg->if_mac) < 0 )
+	{
+		log_app_msg("Could not transmit IEEE 802.11 frame.\n");
+		return;
+	}
+
+	log_app_msg("Sleeping for %d (usecs)...\n", arg->tx_delay);
+	if ( usleep(arg->tx_delay) < 0 )
+	{
+		log_app_msg("Could not sleep for %d.\n", arg->tx_delay);
+		return;
+	}
+
+}
+
+/* __tx_ieee80211_test_frame */
+int __tx_ieee80211_test_frame
+	(const int socket_fd, const int ll_sap, const unsigned char *h_source)
+{
+
+	ieee80211_frame_t *tx_frame
+		= init_ieee80211_frame
+			(	0x01, 0x00, 0,
+					ETH_ADDR_BROADCAST, h_source, ETH_ADDR_BROADCAST,
+					0,
+					ETH_ADDR_NULL	);
+	tx_frame->info.frame_len = IEEE_80211_HLEN + 10;
+
+	if ( print_ieee80211_frame(tx_frame) < 0 )
+	{
+		log_app_msg("Frame formatted incorrectly!\n");
+		return(EX_ERR);
+	}
+
+	int b_written = write(socket_fd, tx_frame, ETH_FRAME_LEN);
+
+	if ( b_written < 0 )
+	{
+		log_sys_error("Frame could not be sent");
+		return(EX_SYS);
+	}
+
+	if ( b_written < ETH_FRAME_LEN )
+	{
+		log_sys_error("Could not transmit all bytes as requested");
+		return(EX_SYS);
+	}
+
+	return(EX_OK);
+
+}
 
 /* print_ieee80211_frame */
 int print_ieee80211_frame(const ieee80211_frame_t *frame)

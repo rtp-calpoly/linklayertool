@@ -91,7 +91,7 @@ int read_configuration(int argc, char** argv, configuration_t* cfg)
 			
 				if ( strlen(optarg) > IF_NAMESIZE )
 				{
-					log_app_msg("[WARNING] if_name lenght = %d, maximum = %d.\
+					log_app_msg("[WARNING] if_name length = %d, maximum = %d.\
 								TRUNCATING!\n", (int)strlen(optarg), \
 								IF_NAMESIZE);
 				}
@@ -131,7 +131,7 @@ int read_configuration(int argc, char** argv, configuration_t* cfg)
 }
 
 /* check_configuration */
-int check_configuration(const configuration_t *cfg)
+int check_configuration(configuration_t *cfg)
 {
 
 	if ( cfg == NULL )
@@ -141,15 +141,20 @@ int check_configuration(const configuration_t *cfg)
 
 	if ( ! ( cfg->is_transmitter != cfg->is_receiver ) )
 	{
-		handle_app_error("Only tx or rx can be activated at a time.\n");
+		handle_app_error("Only TX or RX can be activated at a time.\n");
 	}
 
 	if ( cfg->is_transmitter == true )
 	{
-		if ( cfg->tx_delay <= 0 )
+		if ( ( cfg->tx_delay <= 0 ) || ( cfg->tx_delay > __MAX_TX_DELAY ) )
 		{
-			handle_app_error("tx_delay must be bigger than 0.\n");
+			handle_app_error
+				("tx_delay must be bigger than 0 and smaller than %d.\n"
+						, __MAX_TX_DELAY);
 		}
+
+		cfg->tx_delay = __USECS_2_MSECS * cfg->tx_delay;
+
 	}
 
 	if ( cfg->lsap <= 0 )

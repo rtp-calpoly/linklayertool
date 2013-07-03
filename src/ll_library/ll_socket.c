@@ -249,6 +249,7 @@ ll_socket_t *init_ll_socket
 
 	s->ll_sap = ll_sap;
 	s->frame_type = frame_type;
+	s->tx_delay = tx_delay;
 
 	#ifdef KERNEL_RING
 		log_app_msg("Socket created, TX_FD = %d, RX_FD = %d, ll_sap = %d\n",
@@ -300,15 +301,16 @@ ll_socket_t *open_ll_socket
 {
 
 	// 1) create RAW socket
-	ll_socket_t *ll_socket
-		= init_ll_socket
+	ll_socket_t *ll_socket = init_ll_socket
 			(is_transmitter, tx_delay, ll_if_name, ll_sap, frame_type);
 	
-	// 2) initialize rings for frames tx+rx
 	#ifdef KERNEL_RING
-		if ( init_rings(ll_socket) < 0 )
-			{ handle_app_error("Could not initialize TX/RX rings.\n"); }
-		log_app_msg("IO rings iniatialized.\n");
+
+	// 2) initialize rings for frames tx+rx
+	if ( init_rings(ll_socket) < 0 )
+		{ handle_app_error("Could not initialize TX/RX rings.\n"); }
+	log_app_msg("IO rings iniatialized.\n");
+
 	#endif
 	
 	// 3) bind RAW socket	
@@ -327,6 +329,7 @@ int bind_ll_socket(ll_socket_t *ll_socket)
 	sockaddr_ll_t *sll = init_sockaddr_ll(ll_socket);
 	
 	#ifdef KERNEL_RING
+
 		if ( bind(	ll_socket->tx_socket_fd,
 					(struct sockaddr *)sll, LEN__SOCKADDR_LL)
 				< 0 )
@@ -336,11 +339,14 @@ int bind_ll_socket(ll_socket_t *ll_socket)
 					(struct sockaddr *)sll, LEN__SOCKADDR_LL)
 				< 0 )
 			{ handle_sys_error("Binding RX socket"); }
+
 	#else
+
 		if ( bind(	ll_socket->socket_fd,
 					(struct sockaddr *)sll, LEN__SOCKADDR_LL)
 				< 0 )
 			{ handle_sys_error("Binding socket"); }
+
 	#endif
 	
 	return(EX_OK);
@@ -592,8 +598,8 @@ int init_events_cb(ll_socket_t *ll_socket)
 
 		case TYPE_IEEE_80211:
 
-			//rx_cb = &ieee80211_frame_rx_cb;
-			//tx_cb = &ieee80211_frame_rx_cb;
+			rx_cb = (ev_cb_t)&ieee80211_frame_rx_cb;
+			tx_cb = (ev_cb_t)&ieee80211_frame_tx_cb;
 			break;
 
 		default:

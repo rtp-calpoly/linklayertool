@@ -72,9 +72,12 @@ int main(int argc, char **argv)
 
 	/* 2) Link layer socket is open. */
 	if ( ( ll_socket = open_ll_socket
-						(	cfg->is_transmitter, cfg->tx_delay,
-							cfg->if_name, cfg->lsap,
-							cfg->frame_type	) ) == NULL )
+						(	cfg->is_transmitter,
+							cfg->tx_delay,
+							cfg->if_name,
+							cfg->lsap,
+							cfg->frame_type	)
+						) == NULL )
 		{ handle_app_error("Could not open ll_socket.\n"); }
 	
 	#ifdef KERNEL_RING

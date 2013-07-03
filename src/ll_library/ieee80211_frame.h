@@ -58,8 +58,8 @@ typedef struct ieee80211_header_frame_control
 #define LEN__IEEE_80211_FRAME_CONTROL sizeof(ieee80211_header_frame_control_t)
 
 /*!
- *	\struct ieee80211_header
- *	\brief Structure for decoding the header of an IEEE 802.11 frame.
+ * \struct ieee80211_header
+ * \brief Structure for decoding the header of an IEEE 802.11 frame.
  */
 typedef struct ieee80211_header
 {
@@ -77,8 +77,6 @@ typedef struct ieee80211_header
 
 	unsigned char dist_address[ETH_ALEN];	/*!< Distribution MAC address. */
 
-	char data[IEEE_80211_BLEN];				/*!< Frame body (0 - 2312 B). */
-
 } ieee80211_header_t ;
 
 #define LEN__IEEE80211_HEADER sizeof(ieee80211_header_t)
@@ -91,7 +89,7 @@ typedef struct ieee80211_frame_buffer
 {
 
 	ieee80211_header_t header;	/*!< IEEE 802.11 header. */
-	char data[ETH_DATA_LEN];	/*!< Data of the ethernet frame. */
+	char data[IEEE_80211_BLEN];	/*!< Data body of the IEEE 802.11 frame. */
 
 } ieee80211_buffer_t;
 
@@ -115,9 +113,9 @@ typedef struct ieee80211_frame
 /***************************************************** IEEE 802.11 functions */
 
 /*!
-	\brief Allocates memory for a ieee80211_buffer structure.
-	\return A pointer to the newly allocated block of memory.
-*/
+ * \brief Allocates memory for a ieee80211_buffer structure.
+ * \return A pointer to the newly allocated block of memory.
+ */
 ieee80211_frame_t *new_ieee80211_frame();
 
 /*!
@@ -133,9 +131,9 @@ ieee80211_frame_t *init_ieee80211_frame
 		const unsigned char *dist_address	);
 
 /*!
-	\brief Reads from a socket an ll_framebuffer.
-	\param socket_fd The socket from where to read the frame.
-	\return EX_OK if everything was correct; otherwise < 0.
+ * \brief Reads from a socket an ll_framebuffer.
+ * \param socket_fd The socket from where to read the frame.
+ * \return EX_OK if everything was correct; otherwise < 0.
  */
 #ifdef KERNEL_RING
 	int read_ieee80211_frame(const void *rx_ring, ieee80211_frame_t *rx_frame);
@@ -149,5 +147,29 @@ ieee80211_frame_t *init_ieee80211_frame
  * \return EX_OK if everything was correct; otherwise < 0.
  */
 int print_ieee80211_frame(const ieee80211_frame_t *frame);
+
+/*!
+ * \brief Callback function to be called whenever an IEEE 802.11 frame is
+ * 			received.
+ * \param arg Argument given by the event handler.
+ */
+void ieee80211_frame_rx_cb(const public_ev_arg_t *arg);
+
+/*!
+ * \brief Callback function to be called whenever an IEEE 802.11 frame is
+ * 			to be transmitted.
+ * \param arg Argument given by the event handler.
+ */
+void ieee80211_frame_tx_cb(const public_ev_arg_t *arg);
+
+/*!
+ * \brief Function that transmits an IEEE 802.11 frame for testing.
+ * \param socket_fd The socket through which the test frame will be sent.
+ * \param ll_sap Link layer level SAP.
+ * \param h_source Source MAC for this packet.
+ * \return EX_OK if everything was correct; otherwise < 0.
+ */
+int __tx_ieee80211_test_frame
+	(const int socket_fd, const int ll_sap, const unsigned char *h_source);
 
 #endif /* IEEE80211_FRAME_H_ */

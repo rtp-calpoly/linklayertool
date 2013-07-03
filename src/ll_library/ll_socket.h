@@ -27,6 +27,7 @@
 #include "logger.h"
 #include "ll_library/ll_frame.h"
 #include "ll_library/ieee8023_frame.h"
+#include "ll_library/ieee80211_frame.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -341,22 +342,35 @@ int close_rings(const ll_socket_t *ll_socket);
 */
 int init_events(const bool is_transmitter, ll_socket_t *ll_socket);
 
+/*!
+ * \brief Initializes the callback functions for the events to be registered.
+ * \param ll_socket Structure with the information of the socket.
+ */
 int init_events_cb(ll_socket_t *ll_socket);
 
+/*!
+ * \brief Initializes the callback functions for the rx events to be registered.
+ * \param ll_socket Structure with the information of the socket.
+ */
 int init_rx_events(ll_socket_t *ll_socket);
+
+/*!
+ * \brief Initializes the callback functions for the tx events to be registered.
+ * \param ll_socket Structure with the information of the socket.
+ */
 int init_tx_events(ll_socket_t *ll_socket);
 
 /*!
-	\brief Closes all resources related with the usage of the libev library.
-	\param ll_socket The ll_socket whose resources for the usage of the
-						libev library are to be closed.
-	\return EX_OK in case of a correct execution, <0 otherwise.
-*/
+ * \brief Closes all resources related with the usage of the libev library.
+ * \param ll_socket The ll_socket whose resources for the usage of the
+ * 						libev library are to be closed.
+ * \return EX_OK in case of a correct execution, <0 otherwise.
+ */
 int close_events(const ll_socket_t *ll_socket);
 
 /*!
-	\brief Callback function for frames reception, <libev>.
-*/
+ * \brief Callback function for frames reception, <libev>.
+ */
 void cb_process_frame_rx
 	(struct ev_loop *loop, struct ev_io *watcher, int revents);
 

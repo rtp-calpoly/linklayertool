@@ -24,7 +24,11 @@
 
 /*!< Ethernet broadcast address. */
 const unsigned char ETH_ADDR_BROADCAST[ETH_ALEN]
-                                    = { 0xFF, 0xFF, 0XFF, 0xFF, 0xFF, 0xFF };
+                                    = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+
+/*!< Ethernet NULL address. */
+const unsigned char ETH_ADDR_NULL[ETH_ALEN]
+                                    = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
 /* new_ll_frame */
 ll_frame_t *new_ll_frame()
