@@ -84,7 +84,7 @@ ev_io_arg_t *init_ev_io_arg(ll_socket_t *ll_socket)
 {
 	ev_io_arg_t *a = new_ev_io_arg();
 
-	a->cb_frame_rx = ll_socket->cb_frame_rx;
+	a->cb_specfic = ll_socket->cb_frame_rx;
 	a->cb_frame_tx = ll_socket->cb_frame_tx;
 
 	a->public_arg.ll_sap = ll_socket->ll_sap;
@@ -565,7 +565,7 @@ int init_events(const bool is_transmitter, ll_socket_t *ll_socket)
 	{
 
 		printf("init_rx_events\n");
-		if ( init_rx_events(ll_socket) < 0 )
+		if ( init_watcher(ll_socket) < 0 )
 			{ handle_app_error("Could not initialize RX events with libev!"); }
 		log_app_msg("Frame transmission is disabled.\n");
 
@@ -625,7 +625,7 @@ int init_events_cb(ll_socket_t *ll_socket)
 }
 
 /* init_rx_events */
-int init_rx_events(ll_socket_t *ll_socket)
+int init_watcher(ll_socket_t *ll_socket)
 {
 
 	ll_socket->loop = EV_DEFAULT;
@@ -705,7 +705,7 @@ void cb_process_frame_rx
 	public_ev_arg_t *public_arg = &arg->public_arg;
 	public_arg->socket_fd = watcher->fd;
 
-	arg->cb_frame_rx(public_arg);
+	arg->cb_specfic(public_arg);
 
 }
 

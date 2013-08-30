@@ -122,7 +122,7 @@ typedef struct ev_io_arg
 
 	struct ev_io watcher;			/*!< Watcher for the event. */
 
-	void (*cb_frame_rx) (public_ev_arg_t *arg);		/*!< Callback frame rx. */
+	void (*cb_specfic) (public_ev_arg_t *arg);		/*!< Callback frame rx. */
 	void (*cb_frame_tx) (public_ev_arg_t *arg);		/*!< Callback frame tx. */
 
 	public_ev_arg_t public_arg;		/*!< Data for external callbacks. */
@@ -352,7 +352,7 @@ int init_events_cb(ll_socket_t *ll_socket);
  * \brief Initializes the callback functions for the rx events to be registered.
  * \param ll_socket Structure with the information of the socket.
  */
-int init_rx_events(ll_socket_t *ll_socket);
+int init_watcher(ll_socket_t *ll_socket);
 
 /*!
  * \brief Initializes the callback functions for the tx events to be registered.
